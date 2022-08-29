@@ -1,0 +1,6 @@
+applicationType: default
+defaultPackage: com.pedrozc90
+testFramework: junit
+sourceLanguage: java
+buildTool: maven
+features: [annotation-api, app-name, graalvm, hibernate-jpa, http-client, jackson-databind, java, java-application, jdbc-hikari, junit, liquibase, logback, lombok, maven, netty-server, postgres, reactor, reactor-http-client, readme, security, security-annotations, security-jwt, shade, test-resources, yaml]
