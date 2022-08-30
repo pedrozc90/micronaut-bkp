@@ -137,7 +137,7 @@ public class UserControllerTest {
             Assertions.assertEquals(1, user.getAudit().getVersion());
 
             // update
-            final UserData cmd = new UserData(id, user.getAudit(), "josh@email.com", user.getProfile(), "josh", true);
+            final UserData cmd = new UserData(id, user.getAudit(), "john@email.com", user.getProfile(), "john2", false);
 
             final HttpRequest<?> request2 = HttpRequest.PUT("/users", cmd).bearerAuth(accessToken);
             final HttpResponse<User> response2 = blockingClient.exchange(request2, User.class);
@@ -154,7 +154,7 @@ public class UserControllerTest {
             final User user = blockingClient.retrieve(request, User.class);
 
             Assertions.assertNotNull(user);
-            Assertions.assertEquals("josh", user.getUsername());
+            Assertions.assertEquals("josh2", user.getUsername());
             Assertions.assertEquals("josh@email.com", user.getEmail());
             Assertions.assertNotNull(user.getAudit());
             Assertions.assertEquals(2, user.getAudit().getVersion());

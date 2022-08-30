@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.apache.commons.codec.digest.DigestUtils;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -39,14 +38,5 @@ public class UserRegistration {
     @NotBlank
     @JsonProperty("passwordConfirm")
     private String passwordConfirm;
-
-    public static User transform(final UserRegistration data) {
-        final User user = new User();
-        user.setEmail(data.getEmail());
-        user.setUsername(data.getUsername());
-        user.setPassword(DigestUtils.md5Hex(data.getPassword()));
-        user.setPasswordConfirm(data.getPasswordConfirm());
-        return user;
-    }
 
 }

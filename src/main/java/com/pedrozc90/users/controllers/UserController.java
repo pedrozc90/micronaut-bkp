@@ -5,7 +5,6 @@ import com.pedrozc90.core.models.ResultContent;
 import com.pedrozc90.users.models.*;
 import com.pedrozc90.users.repo.UserRepository;
 import io.micronaut.http.HttpResponse;
-import io.micronaut.http.HttpStatus;
 import io.micronaut.http.annotation.*;
 import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
@@ -15,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.PersistenceException;
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.net.URI;
@@ -33,22 +33,30 @@ public class UserController {
     }
 
     @Get("/")
-    public List<User> fetch() {
+    @Transactional
+    public List<User> fetch(@QueryValue(value = "page", defaultValue = "1") final long page,
+                            @QueryValue(value = "rpp", defaultValue = "15") final long rpp) {
         return userRepository.builder()
             .orderBy(QUser.user.id.asc())
             .select(QUser.user)
+            .limit(rpp)
+            .offset((page - 1) * rpp)
             .fetch();
     }
 
     @Post("/")
     public HttpResponse<?> save(@Valid @Body final UserRegistration data) {
         try {
-            if (!StringUtils.equals(data.getPassword(), data.getPasswordConfirm())) {
-                throw new ApplicationException("Password and password confirm do not match.", HttpStatus.BAD_REQUEST);
+            if (userRepository.validateEmail(data.getEmail())) {
+                throw ApplicationException.of("Email %s already in use.", data.getEmail());
+            } else if (userRepository.validateUsername(data.getUsername())) {
+                throw ApplicationException.of("Username %s already in use.", data.getUsername());
+            } else if (!StringUtils.equals(data.getPassword(), data.getPasswordConfirm())) {
+                throw ApplicationException.of("Password and password confirm do not match.");
             }
 
-            final User tmp = UserRegistration.transform(data);
-            final User user = userRepository.save(tmp);
+            final User user = userRepository.register(data);
+
             return HttpResponse
                 .created(user)
                 .headers((headers) -> headers.location(location(user.getId())));
@@ -74,6 +82,22 @@ public class UserController {
     @Get("/{id}")
     public User get(@NotNull @PathVariable final Long id) {
         return userRepository.findByIdOrThrowException(id);
+    }
+
+    @Patch("/{id}/activate")
+    public HttpResponse<?> activate(@NotNull @PathVariable final Long id) {
+        final User user = userRepository.findByIdOrThrowException(id);
+        user.setActive(true);
+        userRepository.save(user);
+        return HttpResponse.noContent();
+    }
+
+    @Patch("/{id}/deactivate")
+    public HttpResponse<?> deactivate(@NotNull @PathVariable final Long id) {
+        final User user = userRepository.findByIdOrThrowException(id);
+        user.setActive(false);
+        userRepository.save(user);
+        return HttpResponse.noContent();
     }
 
     @Delete("/{id}")

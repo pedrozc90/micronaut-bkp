@@ -37,7 +37,7 @@ public class UserRepositoryTest {
     @Test
     public void failFindById() {
         final long userId = 1_000;
-        ApplicationException e = Assertions.assertThrows(ApplicationException.class, () -> {
+        final ApplicationException e = Assertions.assertThrows(ApplicationException.class, () -> {
             final User user = userRepository.findByIdOrThrowException(userId);
             Assertions.assertNull(user);
         });

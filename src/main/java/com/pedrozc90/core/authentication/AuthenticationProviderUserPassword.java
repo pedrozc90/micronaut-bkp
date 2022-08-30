@@ -35,10 +35,10 @@ public class AuthenticationProviderUserPassword implements AuthenticationProvide
 
             final String passwordHashed = DigestUtils.md5Hex(password);
 
-            final Optional<User> opt = userRepo.findByCredentials(username, passwordHashed);
+            final Optional<User> userOpt = userRepo.findByCredentials(username, passwordHashed);
 
-            if (opt.isPresent()) {
-                final User user = opt.get();
+            if (userOpt.isPresent()) {
+                final User user = userOpt.get();
                 if (user.isNotActive()) {
                     emitter.error(AuthenticationResponse.exception(AuthenticationFailureReason.ACCOUNT_LOCKED));
                 } else {
@@ -46,8 +46,8 @@ public class AuthenticationProviderUserPassword implements AuthenticationProvide
                     AuthenticationUtils.setUserId(user, attributes);
 
                     emitter.next(AuthenticationResponse.success(username, attributes));
+                    emitter.complete();
                 }
-                emitter.complete();
             } else {
                 emitter.error(AuthenticationResponse.exception(AuthenticationFailureReason.USER_NOT_FOUND));
             }
