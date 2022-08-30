@@ -18,13 +18,19 @@ CREATE TABLE IF NOT EXISTS public.users (
     password    varchar(32) NOT NULL,
     active      boolean NOT NULL DEFAULT true,
 
+    tenant_id   bigint,
+
     CONSTRAINT users_pkey PRIMARY KEY (id),
+    CONSTRAINT users_tenant_fkey FOREIGN KEY (tenant_id) REFERENCES public.tenants(id),
     CONSTRAINT users_username_ukey UNIQUE (username),
     CONSTRAINT users_email_ukey UNIQUE (email)
 );
 
 INSERT INTO public.users (email, profile, username, password) VALUES
 ('admin@email.com', 'MASTER', 'master', md5('1'));
+
+INSERT INTO public.users (email, profile, username, password, tenant_id) VALUES
+('tester@email.com', 'NORMAL', 'tester', md5('1'), 1);
 
 -- rollback DROP TABLE IF EXISTS users;
 -- rollback DROP SEQUENCE IF EXISTS users_id_seq;

@@ -1,10 +1,12 @@
 package com.pedrozc90.users.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.pedrozc90.core.audit.Audit;
 import com.pedrozc90.core.audit.Auditable;
 import com.pedrozc90.core.audit.listeners.AuditListener;
+import com.pedrozc90.tenants.models.Tenant;
 import lombok.*;
 
 import javax.persistence.*;
@@ -73,6 +75,11 @@ public class User implements Serializable, Auditable {
     @NotNull
     @Column(name = "active", columnDefinition = "boolean", nullable = false)
     private boolean active = true;
+
+    @JsonInclude(JsonInclude.Include.ALWAYS)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tenant_id", foreignKey = @ForeignKey(name = "users_tenant_fkey"))
+    private Tenant tenant;
 
     @JsonIgnore
     public String getPassword() {

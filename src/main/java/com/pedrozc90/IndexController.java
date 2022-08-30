@@ -1,9 +1,11 @@
 package com.pedrozc90;
 
+import com.pedrozc90.core.authentication.AuthenticationContext;
 import com.pedrozc90.core.models.Context;
 import com.pedrozc90.core.models.Ping;
 import com.pedrozc90.core.models.ResultContent;
-import com.pedrozc90.core.utils.AuthenticationUtils;
+import com.pedrozc90.tenants.models.Tenant;
+import com.pedrozc90.tenants.repo.TenantRepository;
 import com.pedrozc90.users.models.User;
 import com.pedrozc90.users.repo.UserRepository;
 import io.micronaut.http.HttpHeaders;
@@ -28,6 +30,9 @@ public class IndexController {
     @Inject
     private UserRepository userRepository;
 
+    @Inject
+    private TenantRepository tenantRepository;
+
     @Get("/")
     @Produces(MediaType.TEXT_PLAIN)
     public String index() {
@@ -42,10 +47,16 @@ public class IndexController {
     @Get("/context")
     @Secured(SecurityRule.IS_AUTHENTICATED)
     public HttpResponse<ResultContent<Context>> context(final Authentication authentication) {
-        final Long userId = AuthenticationUtils.getUserId(authentication);
+        final Long userId = AuthenticationContext.getUserId();      // AuthenticationUtils.getUserId(authentication);
         final Optional<User> userOpt = userRepository.findById(userId);
+
+        final Long tenantId = AuthenticationContext.getTenantId();  // AuthenticationUtils.getTenantId(authentication);
+        final Optional<Tenant> tenantOpt = tenantRepository.findById(tenantId);
+
         final Context context = new Context();
         userOpt.ifPresent(context::setUser);
+        tenantOpt.ifPresent(context::setTenant);
+
         return HttpResponse.ok(ResultContent.of(context));
     }
 

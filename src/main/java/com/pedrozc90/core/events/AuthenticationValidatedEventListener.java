@@ -1,5 +1,6 @@
 package com.pedrozc90.core.events;
 
+import com.pedrozc90.core.authentication.AuthenticationContext;
 import com.pedrozc90.core.utils.AuthenticationUtils;
 import io.micronaut.context.event.ApplicationEventListener;
 import io.micronaut.security.authentication.Authentication;
@@ -18,8 +19,12 @@ public class AuthenticationValidatedEventListener implements ApplicationEventLis
         final Map<String, Object> attributes = authentication.getAttributes();
 
         final Long userId = AuthenticationUtils.getUserId(attributes);
+        AuthenticationContext.setUserId(userId);
 
-        log.info("authenticated -> username: {}, user_id: {}", authentication.getName(), userId);
+        final Long tenantId = AuthenticationUtils.getTenantId(attributes);
+        AuthenticationContext.setTenantId(tenantId);
+
+        log.info("authenticated -> username: {}, user_id: {}, tenant_id: {}", authentication.getName(), userId, tenantId);
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.pedrozc90.users.models;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.pedrozc90.core.audit.Audit;
 import com.pedrozc90.core.audit.Auditable;
+import com.pedrozc90.tenants.models.Tenant;
 import io.micronaut.core.annotation.Introspected;
 import lombok.*;
 
@@ -56,5 +57,17 @@ public class UserData implements Serializable, Auditable {
     @NotNull
     @JsonProperty("active")
     private boolean active = true;
+
+    @JsonProperty("tenant")
+    private Tenant tenant;
+
+    public UserData(final Long id, final Audit audit, final String email, final Profile profile, final String username, final boolean active) {
+        this.id = id;
+        this.audit = audit;
+        this.email = email;
+        this.profile = profile;
+        this.username = username;
+        this.active = active;
+    }
 
 }

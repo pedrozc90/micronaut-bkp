@@ -44,6 +44,7 @@ public class AuthenticationProviderUserPassword implements AuthenticationProvide
                 } else {
                     final Map<String, Object> attributes = new HashMap<>();
                     AuthenticationUtils.setUserId(user, attributes);
+                    AuthenticationUtils.setTenantId(user.getTenant(), attributes);
 
                     emitter.next(AuthenticationResponse.success(username, attributes));
                 }

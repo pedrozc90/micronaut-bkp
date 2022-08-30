@@ -5,7 +5,8 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
     <include file="changelogs/01-create-functions.sql" relativeToChangelogFile="true"/>
-    <include file="changelogs/02-create-users.sql" relativeToChangelogFile="true"/>
-    <include file="changelogs/03-create-access-logs.sql" relativeToChangelogFile="true"/>
+    <include file="changelogs/02-create-tenants.sql" relativeToChangelogFile="true"/>
+    <include file="changelogs/03-create-users.sql" relativeToChangelogFile="true"/>
+    <include file="changelogs/04-create-access-logs.sql" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
