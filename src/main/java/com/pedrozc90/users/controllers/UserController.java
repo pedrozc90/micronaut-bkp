@@ -2,10 +2,7 @@ package com.pedrozc90.users.controllers;
 
 import com.pedrozc90.core.exceptions.ApplicationException;
 import com.pedrozc90.core.models.ResultContent;
-import com.pedrozc90.users.models.Profile;
-import com.pedrozc90.users.models.User;
-import com.pedrozc90.users.models.UserData;
-import com.pedrozc90.users.models.UserRegistration;
+import com.pedrozc90.users.models.*;
 import com.pedrozc90.users.repo.UserRepository;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.HttpStatus;
@@ -37,7 +34,10 @@ public class UserController {
 
     @Get("/")
     public List<User> fetch() {
-        return userRepository.fetch();
+        return userRepository.builder()
+            .orderBy(QUser.user.id.asc())
+            .select(QUser.user)
+            .fetch();
     }
 
     @Post("/")
@@ -61,8 +61,11 @@ public class UserController {
     @Put("/")
     public HttpResponse<?> update(@NotNull @Valid @Body final UserData data) {
         final Long id = data.getId();
-        final User tmp = userRepository.findByIdOrThrowException(id);
-        final User user = userRepository.update(tmp, data);
+
+        User tmp = userRepository.findByIdOrThrowException(id);
+        User.merge(tmp, data);
+
+        final User user = userRepository.save(tmp);
         return HttpResponse
             .ok(user)
             .headers((headers) -> headers.location(location(id)));

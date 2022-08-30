@@ -87,8 +87,7 @@ public class CustomAccessRefreshTokenLoginHandler implements LoginHandler {
 
         userOpt.ifPresent(accessLog::setUser);
 
-        // TODO: no entity manager
-        accessLogRepository.save(accessLog);
+        accessLogRepository.insert(accessLog);
     }
 
 }

@@ -99,4 +99,13 @@ public class User implements Serializable, Auditable {
         return !isActive();
     }
 
+    public static User merge(final User user, final UserData data) {
+        user.setUsername(data.getUsername());
+        user.setEmail(data.getEmail());
+        user.setProfile(data.getProfile());
+        user.setActive(data.isActive());
+        user.setAudit(data.getAudit());
+        return user;
+    }
+
 }
