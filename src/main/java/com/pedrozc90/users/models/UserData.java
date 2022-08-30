@@ -20,6 +20,7 @@ import java.io.Serializable;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder(toBuilder = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(onlyExplicitlyIncluded = true)
 @Introspected
@@ -60,14 +61,5 @@ public class UserData implements Serializable, Auditable {
 
     @JsonProperty("tenant")
     private Tenant tenant;
-
-    public UserData(final Long id, final Audit audit, final String email, final Profile profile, final String username, final boolean active) {
-        this.id = id;
-        this.audit = audit;
-        this.email = email;
-        this.profile = profile;
-        this.username = username;
-        this.active = active;
-    }
 
 }

@@ -54,8 +54,14 @@ public class TenantControllerTest {
     @Test
     public void testFindExistingUser() {
         final long tenantId = 1;
+
         final HttpRequest<?> request = HttpRequest.GET(String.format("/tenants/%d", tenantId)).bearerAuth(accessToken);
-        final Tenant tenant = blockingClient.retrieve(request, Tenant.class);
+        final HttpResponse<Tenant> response = blockingClient.exchange(request, Tenant.class);
+
+        Assertions.assertNotNull(response);
+        Assertions.assertEquals(HttpStatus.OK, response.getStatus());
+
+        final Tenant tenant = response.body();
         Assertions.assertNotNull(tenant);
         Assertions.assertEquals(tenantId, tenant.getId());
         Assertions.assertNotNull(tenant.getName());
@@ -72,6 +78,8 @@ public class TenantControllerTest {
         Assertions.assertNotNull(e);
         Assertions.assertNotNull(e.getResponse());
         Assertions.assertEquals(HttpStatus.NOT_FOUND, e.getStatus());
+        Assertions.assertNotNull(e.getMessage());
+        Assertions.assertTrue(e.getMessage().matches("(?i)tenant.*not found."));
     }
 
     @Test
@@ -80,7 +88,7 @@ public class TenantControllerTest {
 
         {
             final TenantRegistration cmd = new TenantRegistration("????");
-            final HttpRequest<?> request = HttpRequest.POST("/users", cmd).bearerAuth(accessToken);
+            final HttpRequest<?> request = HttpRequest.POST("/tenants", cmd).bearerAuth(accessToken);
             final HttpResponse<Tenant> response = blockingClient.exchange(request, Tenant.class);
 
             Assertions.assertNotNull(response);

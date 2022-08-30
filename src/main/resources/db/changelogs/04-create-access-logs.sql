@@ -17,10 +17,11 @@ CREATE TABLE IF NOT EXISTS public.access_logs (
     action      varchar(32) NOT NULL DEFAULT 'LOGIN',
     token       varchar(255),
 
+    username    varchar(32),
     user_id     bigint,
 
-    CONSTRAINT access_logs_pkey PRIMARY KEY (id),
-    CONSTRAINT access_logs_user_fkey FOREIGN KEY (user_id) REFERENCES public.users (id)
+    CONSTRAINT access_logs_pkey PRIMARY KEY (id)
+    -- CONSTRAINT access_logs_user_fkey FOREIGN KEY (user_id) REFERENCES public.users (id)
 );
 
 -- rollback DROP TABLE IF EXISTS access_logs;

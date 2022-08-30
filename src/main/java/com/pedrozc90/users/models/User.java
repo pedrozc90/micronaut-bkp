@@ -7,6 +7,7 @@ import com.pedrozc90.core.audit.Audit;
 import com.pedrozc90.core.audit.Auditable;
 import com.pedrozc90.core.audit.listeners.AuditListener;
 import com.pedrozc90.tenants.models.Tenant;
+import com.querydsl.core.annotations.Config;
 import lombok.*;
 
 import javax.persistence.*;
@@ -29,6 +30,7 @@ import java.io.Serializable;
 @NamedNativeQueries({
     @NamedNativeQuery(name = "reset_sequence", query = "CALL reset_table_sequence('users');")
 })
+@Config(entityAccessors = true, listAccessors = true, mapAccessors = true)
 public class User implements Serializable, Auditable {
 
     @ToString.Include
@@ -104,6 +106,16 @@ public class User implements Serializable, Auditable {
     @JsonIgnore
     public boolean isNotActive() {
         return !isActive();
+    }
+
+    public static User merge(final User user, final UserData data) {
+        user.setUsername(data.getUsername());
+        user.setEmail(data.getEmail());
+        user.setProfile(data.getProfile());
+        user.setActive(data.isActive());
+        user.setAudit(data.getAudit());
+        user.setTenant(data.getTenant());
+        return user;
     }
 
 }

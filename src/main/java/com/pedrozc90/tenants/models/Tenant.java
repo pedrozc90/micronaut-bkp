@@ -5,6 +5,7 @@ import com.pedrozc90.core.audit.Audit;
 import com.pedrozc90.core.audit.Auditable;
 import com.pedrozc90.core.audit.listeners.AuditListener;
 import com.pedrozc90.users.models.User;
+import com.querydsl.core.annotations.Config;
 import lombok.*;
 
 import javax.persistence.*;
@@ -16,7 +17,7 @@ import java.util.List;
 
 @Entity
 @EntityListeners({ AuditListener.class })
-@Table(name = "vw_tenants", schema = "public")
+@Table(name = "tenants", schema = "public")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -29,6 +30,7 @@ import java.util.List;
     @NamedNativeQuery(name = "set_tenant", query = "SELECT set_tenant(:tenant_id)"),
     @NamedNativeQuery(name = "reset_tenant", query = "CALL reset_tenant()")
 })
+@Config(entityAccessors = true, listAccessors = true, mapAccessors = true)
 public class Tenant implements Serializable, Auditable {
 
     @ToString.Include
@@ -48,5 +50,11 @@ public class Tenant implements Serializable, Auditable {
     @JsonIgnore
     @OneToMany(mappedBy = "tenant", fetch = FetchType.LAZY)
     private List<User> users = new ArrayList<>();
+
+    public static Tenant merge(final Tenant t, final TenantData data) {
+        t.setName(data.getName());
+        t.setAudit(data.getAudit());
+        return t;
+    }
 
 }

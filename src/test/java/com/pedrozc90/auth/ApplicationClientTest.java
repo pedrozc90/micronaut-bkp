@@ -15,15 +15,12 @@ import java.text.ParseException;
 @MicronautTest
 public class ApplicationClientTest {
 
-    private static final String USERNAME = "master";
-    private static final String PASSWORD = "1";
-
     @Inject
     private ApplicationClient client;
 
     @Test
     public void verifyJwtAuthenticationWorksWithDeclarativeClient() throws ParseException {
-        final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(USERNAME, PASSWORD);
+        final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials("master", "1");
         final BearerAccessRefreshToken bearer = client.login(credentials);
 
         Assertions.assertNotNull(bearer);

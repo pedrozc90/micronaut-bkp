@@ -1,19 +1,20 @@
 package com.pedrozc90.users.controllers;
 
 import com.pedrozc90.core.exceptions.ApplicationException;
+import com.pedrozc90.core.models.Page;
+import com.pedrozc90.core.models.Pagination;
 import com.pedrozc90.core.models.ResultContent;
-import com.pedrozc90.users.models.Profile;
-import com.pedrozc90.users.models.User;
-import com.pedrozc90.users.models.UserData;
-import com.pedrozc90.users.models.UserRegistration;
+import com.pedrozc90.core.querydsl.JPAQuery;
+import com.pedrozc90.users.models.*;
 import com.pedrozc90.users.repo.UserRepository;
+import io.micronaut.core.annotation.Nullable;
 import io.micronaut.http.HttpResponse;
-import io.micronaut.http.HttpStatus;
 import io.micronaut.http.annotation.*;
 import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
+import io.micronaut.transaction.annotation.ReadOnly;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -21,7 +22,6 @@ import javax.persistence.PersistenceException;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.net.URI;
-import java.util.List;
 
 @Slf4j
 @Secured(SecurityRule.IS_AUTHENTICATED)
@@ -36,19 +36,38 @@ public class UserController {
     }
 
     @Get("/")
-    public List<User> fetch() {
-        return userRepository.fetch();
+    @ReadOnly
+    public Page<User> fetch(@QueryValue(value = "page", defaultValue = "1") final int page,
+                            @QueryValue(value = "rpp", defaultValue = "15") final int rpp,
+                            @Nullable @QueryValue(value = "q") final String q) {
+        final JPAQuery<User> query = userRepository.builder();
+
+        if (StringUtils.isNotBlank(q)) {
+            query.where(
+                QUser.user.username.containsIgnoreCase(q)
+                    .or(QUser.user.email.containsIgnoreCase(q))
+            );
+        }
+
+        query.orderBy(QUser.user.id.asc())
+            .select(QUser.user);
+
+        return Pagination.fetch(query, page, rpp);
     }
 
     @Post("/")
     public HttpResponse<?> save(@Valid @Body final UserRegistration data) {
         try {
-            if (!StringUtils.equals(data.getPassword(), data.getPasswordConfirm())) {
-                throw new ApplicationException("Password and password confirm do not match.", HttpStatus.BAD_REQUEST);
+            if (userRepository.validateEmail(data.getEmail())) {
+                throw ApplicationException.of("Email %s already in use.", data.getEmail());
+            } else if (userRepository.validateUsername(data.getUsername())) {
+                throw ApplicationException.of("Username %s already in use.", data.getUsername());
+            } else if (!StringUtils.equals(data.getPassword(), data.getPasswordConfirm())) {
+                throw ApplicationException.of("Password and password confirm do not match.");
             }
 
-            final User tmp = UserRegistration.transform(data);
-            final User user = userRepository.save(tmp);
+            final User user = userRepository.register(data);
+
             return HttpResponse
                 .created(user)
                 .headers((headers) -> headers.location(location(user.getId())));
@@ -61,8 +80,11 @@ public class UserController {
     @Put("/")
     public HttpResponse<?> update(@NotNull @Valid @Body final UserData data) {
         final Long id = data.getId();
+
         final User tmp = userRepository.findByIdOrThrowException(id);
-        final User user = userRepository.update(tmp, data);
+        User.merge(tmp, data);
+
+        final User user = userRepository.save(tmp);
         return HttpResponse
             .ok(user)
             .headers((headers) -> headers.location(location(id)));
@@ -71,6 +93,22 @@ public class UserController {
     @Get("/{id}")
     public User get(@NotNull @PathVariable final Long id) {
         return userRepository.findByIdOrThrowException(id);
+    }
+
+    @Patch("/{id}/activate")
+    public HttpResponse<?> activate(@NotNull @PathVariable final Long id) {
+        final User user = userRepository.findByIdOrThrowException(id);
+        user.setActive(true);
+        userRepository.save(user);
+        return HttpResponse.noContent();
+    }
+
+    @Patch("/{id}/deactivate")
+    public HttpResponse<?> deactivate(@NotNull @PathVariable final Long id) {
+        final User user = userRepository.findByIdOrThrowException(id);
+        user.setActive(false);
+        userRepository.save(user);
+        return HttpResponse.noContent();
     }
 
     @Delete("/{id}")

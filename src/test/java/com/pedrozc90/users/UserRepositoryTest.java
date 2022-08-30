@@ -1,5 +1,6 @@
 package com.pedrozc90.users;
 
+import com.pedrozc90.core.exceptions.ApplicationException;
 import com.pedrozc90.users.models.Profile;
 import com.pedrozc90.users.models.User;
 import com.pedrozc90.users.repo.UserRepository;
@@ -36,10 +37,14 @@ public class UserRepositoryTest {
     @Test
     public void failFindById() {
         final long userId = 1_000;
-        Assertions.assertThrows(Exception.class, () -> {
+        final ApplicationException e = Assertions.assertThrows(ApplicationException.class, () -> {
             final User user = userRepository.findByIdOrThrowException(userId);
             Assertions.assertNull(user);
         });
+
+        Assertions.assertNotNull(e);
+        Assertions.assertNotNull(e.getMessage());
+        Assertions.assertTrue(e.getMessage().matches("(?i)^user.+not found\\.$"));
     }
 
 }

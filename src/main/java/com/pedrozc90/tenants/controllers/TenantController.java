@@ -1,23 +1,29 @@
 package com.pedrozc90.tenants.controllers;
 
+import com.pedrozc90.core.models.Page;
+import com.pedrozc90.core.models.Pagination;
 import com.pedrozc90.core.models.ResultContent;
+import com.pedrozc90.core.querydsl.JPAQuery;
+import com.pedrozc90.tenants.models.QTenant;
 import com.pedrozc90.tenants.models.Tenant;
 import com.pedrozc90.tenants.models.TenantData;
 import com.pedrozc90.tenants.models.TenantRegistration;
 import com.pedrozc90.tenants.repo.TenantRepository;
+import io.micronaut.core.annotation.Nullable;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.*;
 import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
+import io.micronaut.transaction.annotation.ReadOnly;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.PersistenceException;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.net.URI;
-import java.util.List;
 
 @Slf4j
 @Secured(SecurityRule.IS_AUTHENTICATED)
@@ -32,17 +38,28 @@ public class TenantController {
     }
 
     @Get("/")
-    public List<Tenant> fetch() {
+    @ReadOnly
+    public Page<Tenant> fetch(@QueryValue(value = "page", defaultValue = "1") final int page,
+                              @QueryValue(value = "rpp", defaultValue = "15") final int rpp,
+                              @Nullable @QueryValue(value = "q") final String q) {
         // final Long tenantId = AuthContext.getTenantId();
         tenantRepository.setAllTenantsSession();
-        return tenantRepository.fetch();
+        final JPAQuery<Tenant> query = tenantRepository.builder();
+
+        if (StringUtils.isNotBlank(q)) {
+            query.where(QTenant.tenant.name.containsIgnoreCase(q));
+        }
+
+        query.orderBy(QTenant.tenant.id.asc())
+            .select(QTenant.tenant);
+
+        return Pagination.fetch(query, page, rpp);
     }
 
     @Post("/")
-    public HttpResponse<Tenant> save(@Valid @Body final TenantRegistration data) {
+    public HttpResponse<Tenant> save(@Valid @NotNull @Body final TenantRegistration data) {
         try {
-            final Tenant t = TenantRegistration.transform(data);
-            final Tenant tenant = tenantRepository.save(t);
+            final Tenant tenant = tenantRepository.register(data);
             return HttpResponse
                 .created(tenant)
                 .headers((headers) -> headers.location(location(tenant.getId())));
@@ -53,10 +70,13 @@ public class TenantController {
     }
 
     @Put("/")
-    public HttpResponse<Tenant> update(@NotNull @Valid @Body final TenantData data) {
+    public HttpResponse<Tenant> update(@Valid @NotNull @Body final TenantData data) {
         final Long id = data.getId();
+
         final Tenant tmp = tenantRepository.findByIdOrThrowException(id);
-        final Tenant tenant = tenantRepository.update(tmp, data);
+        Tenant.merge(tmp, data);
+
+        final Tenant tenant = tenantRepository.save(tmp);
         return HttpResponse
             .ok(tenant)
             .headers((headers) -> headers.location(location(id)));

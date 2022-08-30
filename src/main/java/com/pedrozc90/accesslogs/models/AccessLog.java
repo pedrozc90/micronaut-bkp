@@ -1,9 +1,8 @@
-package com.pedrozc90.logs.models;
+package com.pedrozc90.accesslogs.models;
 
 import com.pedrozc90.core.audit.Audit;
 import com.pedrozc90.core.audit.Auditable;
 import com.pedrozc90.core.audit.listeners.AuditListener;
-import com.pedrozc90.users.models.User;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 
@@ -49,10 +48,11 @@ public class AccessLog implements Serializable, Auditable {
     @Column(name = "token")
     private String token;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    // @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "access_logs_user_fkey"))
-    @JoinColumn(name = "user_id")
-    private User user;
+    @Column(name = "username")
+    private String username;
+
+    @Column(name = "user_id")
+    private Long userId;
 
     public void setUserAgent(final String userAgent) {
         this.userAgent = StringUtils.substring(userAgent, 0, 255);
