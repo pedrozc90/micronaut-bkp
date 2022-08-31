@@ -63,7 +63,6 @@ public class UserControllerTest {
         }
     }
 
-    @SuppressWarnings({ "unchecked" })
     @Test
     public void testFetchAListOfUsers() {
         final HttpRequest<?> request = HttpRequest.GET(String.format("/users?page=%d&rpp=%d", 1, 15))
@@ -72,7 +71,7 @@ public class UserControllerTest {
         Assertions.assertNotNull(response);
         Assertions.assertEquals(HttpStatus.OK, response.getStatus());
 
-        final Page<User> page = (Page<User>) response.body();
+        final Page<?> page = (Page<?>) response.body();
         Assertions.assertNotNull(page);
         Assertions.assertEquals(1, page.getPage());
         Assertions.assertEquals(15, page.getRpp());
