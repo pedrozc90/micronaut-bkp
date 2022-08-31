@@ -71,7 +71,7 @@ public abstract class CrudRepository<E> {
         return entity;
     }
 
-    @Transactional(value = Transactional.TxType.REQUIRES_NEW)
+    @Transactional
     public E save(@Valid @NotNull @NonNull final E entity) {
         return em.merge(entity);
     }
@@ -102,20 +102,25 @@ public abstract class CrudRepository<E> {
         return count(predicate) > 0;
     }
 
-    @Transactional(value = Transactional.TxType.REQUIRES_NEW)
+    @Transactional
     public void resetSequence() {
         em.createNativeQuery("CALL reset_table_sequence(:table_name)")
             .setParameter("table_name", tableName)
             .executeUpdate();
     }
 
-    @Transactional(value = Transactional.TxType.REQUIRED)
+    @Transactional
     public void flush() {
         em.flush();
     }
 
     public void detach(final Object entity) {
         em.detach(entity);
+    }
+
+    @Transactional
+    public void commit() {
+        em.getTransaction().commit();
     }
 
 }

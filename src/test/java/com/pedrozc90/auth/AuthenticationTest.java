@@ -81,6 +81,7 @@ public class AuthenticationTest {
     public void verifyDeactivatedUserAuthentication() {
         user.setActive(false);
         userRepository.save(user);
+        userRepository.commit();
 
         final HttpClientResponseException e = Assertions.assertThrows(HttpClientResponseException.class, () -> {
             final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(username, password);
