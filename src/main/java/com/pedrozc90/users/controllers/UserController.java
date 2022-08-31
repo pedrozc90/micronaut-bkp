@@ -1,24 +1,27 @@
 package com.pedrozc90.users.controllers;
 
 import com.pedrozc90.core.exceptions.ApplicationException;
+import com.pedrozc90.core.models.Page;
+import com.pedrozc90.core.models.Pagination;
 import com.pedrozc90.core.models.ResultContent;
+import com.pedrozc90.core.querydsl.JPAQuery;
 import com.pedrozc90.users.models.*;
 import com.pedrozc90.users.repo.UserRepository;
+import io.micronaut.core.annotation.Nullable;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.*;
 import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
+import io.micronaut.transaction.annotation.ReadOnly;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.PersistenceException;
-import javax.transaction.Transactional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.net.URI;
-import java.util.List;
 
 @Slf4j
 @Secured(SecurityRule.IS_AUTHENTICATED)
@@ -33,15 +36,23 @@ public class UserController {
     }
 
     @Get("/")
-    @Transactional
-    public List<User> fetch(@QueryValue(value = "page", defaultValue = "1") final long page,
-                            @QueryValue(value = "rpp", defaultValue = "15") final long rpp) {
-        return userRepository.builder()
-            .orderBy(QUser.user.id.asc())
-            .select(QUser.user)
-            .limit(rpp)
-            .offset((page - 1) * rpp)
-            .fetch();
+    @ReadOnly
+    public Page<User> fetch(@QueryValue(value = "page", defaultValue = "1") final int page,
+                            @QueryValue(value = "rpp", defaultValue = "15") final int rpp,
+                            @Nullable @QueryValue(value = "q") final String q) {
+        final JPAQuery<User> query = userRepository.builder();
+
+        if (StringUtils.isNotBlank(q)) {
+            query.where(
+                QUser.user.username.containsIgnoreCase(q)
+                    .or(QUser.user.email.containsIgnoreCase(q))
+            );
+        }
+
+        query.orderBy(QUser.user.id.asc())
+            .select(QUser.user);
+
+        return Pagination.fetch(query, page, rpp);
     }
 
     @Post("/")
@@ -70,7 +81,7 @@ public class UserController {
     public HttpResponse<?> update(@NotNull @Valid @Body final UserData data) {
         final Long id = data.getId();
 
-        User tmp = userRepository.findByIdOrThrowException(id);
+        final User tmp = userRepository.findByIdOrThrowException(id);
         User.merge(tmp, data);
 
         final User user = userRepository.save(tmp);

@@ -16,8 +16,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static javax.transaction.Transactional.TxType.REQUIRES_NEW;
-
 public abstract class CrudRepository<E> {
 
     @PersistenceContext
@@ -73,7 +71,7 @@ public abstract class CrudRepository<E> {
         return entity;
     }
 
-    @Transactional(value = REQUIRES_NEW)
+    @Transactional(value = Transactional.TxType.REQUIRES_NEW)
     public E save(@Valid @NotNull @NonNull final E entity) {
         return em.merge(entity);
     }
@@ -89,11 +87,11 @@ public abstract class CrudRepository<E> {
         em.remove(entity);
     }
 
-    @Transactional
     public void deleteById(final Long id) {
         findById(id).ifPresent(this::delete);
     }
 
+    @ReadOnly
     public long count(@NotNull @NonNull final Predicate predicate) {
         return createQuery().from(entityPath)
             .where(predicate)
@@ -104,11 +102,20 @@ public abstract class CrudRepository<E> {
         return count(predicate) > 0;
     }
 
-    @Transactional(value = REQUIRES_NEW)
+    @Transactional(value = Transactional.TxType.REQUIRES_NEW)
     public void resetSequence() {
         em.createNativeQuery("CALL reset_table_sequence(:table_name)")
             .setParameter("table_name", tableName)
             .executeUpdate();
+    }
+
+    @Transactional(value = Transactional.TxType.REQUIRED)
+    public void flush() {
+        em.flush();
+    }
+
+    public void detach(final Object entity) {
+        em.detach(entity);
     }
 
 }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.pedrozc90.core.audit.Audit;
 import com.pedrozc90.core.audit.Auditable;
 import com.pedrozc90.core.audit.listeners.AuditListener;
+import com.querydsl.core.annotations.Config;
 import lombok.*;
 
 import javax.persistence.*;
@@ -27,6 +28,7 @@ import java.io.Serializable;
 @NamedNativeQueries({
     @NamedNativeQuery(name = "reset_sequence", query = "CALL reset_table_sequence('users');")
 })
+@Config(entityAccessors = true, listAccessors = true, mapAccessors = true)
 public class User implements Serializable, Auditable {
 
     @ToString.Include

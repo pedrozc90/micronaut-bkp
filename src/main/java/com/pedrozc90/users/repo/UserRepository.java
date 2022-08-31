@@ -11,7 +11,6 @@ import org.apache.commons.codec.digest.DigestUtils;
 
 import javax.transaction.Transactional;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 @Singleton
 public class UserRepository extends CrudRepository<User> {
