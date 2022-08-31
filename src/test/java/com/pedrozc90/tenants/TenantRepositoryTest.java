@@ -5,15 +5,13 @@ import com.pedrozc90.tenants.models.Tenant;
 import com.pedrozc90.tenants.repo.TenantRepository;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
 @MicronautTest
+@TestMethodOrder(value = MethodOrderer.OrderAnnotation.class)
 public class TenantRepositoryTest {
 
     @Inject
@@ -37,36 +35,38 @@ public class TenantRepositoryTest {
     public void testFindById() {
         final long tenantId = 1L;
 
-        final Optional<Tenant> tenantOptional = repo.findById(tenantId);
-        Assertions.assertNotNull(tenantOptional);
-        Assertions.assertTrue(tenantOptional.isPresent());
-        Assertions.assertNotNull(tenantOptional.get());
+        final Optional<Tenant> tenantOpt = repo.findById(tenantId);
+        Assertions.assertNotNull(tenantOpt);
+        Assertions.assertTrue(tenantOpt.isPresent());
+        Assertions.assertNotNull(tenantOpt.get());
 
-        final Tenant tenant = tenantOptional.get();
-        Assertions.assertEquals(tenantId, tenant.getId());
-        Assertions.assertNotNull(tenant.getName());
-        Assertions.assertNotNull(tenant.getAudit());
+        final Tenant t = tenantOpt.get();
+        Assertions.assertEquals(tenantId, t.getId());
+        Assertions.assertNotNull(t.getName());
+        Assertions.assertNotNull(t.getAudit());
     }
 
     @Test
     @Order(3)
     public void testInsert() {
-        final Tenant t = new Tenant();
-        t.setName("Unknown");
-        final Tenant tenant = repo.save(t);
+        final Tenant t = Optional.of(Tenant.builder().name("Unknown").build())
+            .map((v) -> repo.save(v))
+            .orElse(null);
 
-        Assertions.assertNotNull(tenant);
-        Assertions.assertNotNull(tenant.getId());
-        Assertions.assertNotNull(tenant.getName());
+        Assertions.assertNotNull(t);
+        Assertions.assertNotNull(t.getId());
+        Assertions.assertNotNull(t.getName());
     }
 
     @Test
     @Order(4)
-    @Transactional(value = Transactional.TxType.REQUIRES_NEW)
     public void testDelete() {
         repo.findOne(QTenant.tenant.name.equalsIgnoreCase("Unknown"))
-            .ifPresent(v -> repo.delete(v));
-        repo.flush();
+            .ifPresent(v -> {
+                repo.delete(v);
+                repo.commit();
+            });
+        repo.resetSequence();
     }
 
 }
