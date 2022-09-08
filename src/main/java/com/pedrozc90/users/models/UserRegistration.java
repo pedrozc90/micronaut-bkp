@@ -34,7 +34,7 @@ public class UserRegistration {
 
     @NotNull
     @NotBlank
-    @JsonProperty("passwordConfirm")
+    @JsonProperty("password_confirm")
     private String passwordConfirm;
 
 }

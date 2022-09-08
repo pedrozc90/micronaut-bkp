@@ -33,11 +33,13 @@ public class User implements Serializable, Auditable {
 
     @ToString.Include
     @Id
+    @JsonProperty("id")
     // @SequenceGenerator(name = "users_id_seq", sequenceName = "users_id_seq", schema = "public", initialValue = 1)
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "users_id_seq")
     private Long id;
 
     @Embedded
+    @JsonProperty("audit")
     private Audit audit = new Audit();
 
     @ToString.Include
@@ -45,12 +47,14 @@ public class User implements Serializable, Auditable {
     @NotBlank
     @Email
     @Size(max = 255)
+    @JsonProperty("email")
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
     @ToString.Include
     @NotNull
     @Enumerated(EnumType.STRING)
+    @JsonProperty("profile")
     @Column(name = "profile", length = 16, nullable = false)
     private Profile profile = Profile.NORMAL;
 
@@ -58,6 +62,7 @@ public class User implements Serializable, Auditable {
     @NotNull
     @NotBlank
     @Size(max = 32)
+    @JsonProperty("username")
     @Column(name = "username", length = 32, nullable = false, unique = true)
     private String username;
 
@@ -65,6 +70,7 @@ public class User implements Serializable, Auditable {
     @NotNull
     @NotBlank
     @Size(max = 32)
+    // @JsonProperty("password")
     @Column(name = "password", length = 32, nullable = false)
     private String password;
 
@@ -73,6 +79,7 @@ public class User implements Serializable, Auditable {
 
     @ToString.Include
     @NotNull
+    @JsonProperty("active")
     @Column(name = "active", columnDefinition = "boolean", nullable = false)
     private boolean active = true;
 
@@ -91,7 +98,7 @@ public class User implements Serializable, Auditable {
         return passwordConfirm;
     }
 
-    @JsonProperty("passwordConfirm")
+    @JsonProperty("password_confirm")
     public void setPasswordConfirm(final String passwordConfirm) {
         this.passwordConfirm = passwordConfirm;
     }

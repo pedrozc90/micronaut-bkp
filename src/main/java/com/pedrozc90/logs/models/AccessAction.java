@@ -1,4 +1,4 @@
-package com.pedrozc90.accesslogs.models;
+package com.pedrozc90.logs.models;
 
 public enum AccessAction {
 

@@ -46,7 +46,7 @@ public class AuthenticationTest {
         user.setUsername(username);
         user.setPassword(DigestUtils.md5Hex(password));
         user.setActive(true);
-        user = userRepository.insert(user);
+        user = userRepository.save(user);
     }
 
     @AfterEach
@@ -72,6 +72,9 @@ public class AuthenticationTest {
         final BearerAccessRefreshToken bearer = response.body();
         Assertions.assertNotNull(bearer);
         Assertions.assertNotNull(bearer.getAccessToken());
+        Assertions.assertNotNull(bearer.getRefreshToken());
+        Assertions.assertEquals("Bearer", bearer.getTokenType());
+        Assertions.assertNotNull(bearer.getExpiresIn());
         Assertions.assertTrue(JWTParser.parse(bearer.getAccessToken()) instanceof SignedJWT);
         Assertions.assertEquals(username, bearer.getUsername());
     }

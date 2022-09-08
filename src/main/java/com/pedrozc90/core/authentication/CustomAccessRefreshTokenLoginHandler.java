@@ -1,7 +1,7 @@
 package com.pedrozc90.core.authentication;
 
-import com.pedrozc90.accesslogs.models.AccessAction;
-import com.pedrozc90.accesslogs.repo.AccessLogRepository;
+import com.pedrozc90.logs.models.AccessAction;
+import com.pedrozc90.logs.repo.AccessLogRepository;
 import io.micronaut.context.annotation.Replaces;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;

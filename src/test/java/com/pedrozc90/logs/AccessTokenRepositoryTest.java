@@ -1,8 +1,8 @@
-package com.pedrozc90.accesslogs;
+package com.pedrozc90.logs;
 
-import com.pedrozc90.accesslogs.models.AccessAction;
-import com.pedrozc90.accesslogs.models.AccessLog;
-import com.pedrozc90.accesslogs.repo.AccessLogRepository;
+import com.pedrozc90.logs.models.AccessAction;
+import com.pedrozc90.logs.models.AccessToken;
+import com.pedrozc90.logs.repo.AccessLogRepository;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.AfterEach;
@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 @MicronautTest
-public class AccessLogRepositoryTest {
+public class AccessTokenRepositoryTest {
 
     @Inject
     private AccessLogRepository repo;
@@ -20,7 +20,7 @@ public class AccessLogRepositoryTest {
     @AfterEach
     public void reset() {
         try {
-            final List<AccessLog> list = repo.fetchAll();
+            final List<AccessToken> list = repo.fetchAll();
             list.forEach((v) -> repo.delete(v));
         } finally {
             repo.resetSequence();
@@ -29,7 +29,7 @@ public class AccessLogRepositoryTest {
 
     @Test
     public void insert() {
-        final AccessLog log = new AccessLog();
+        final AccessToken log = new AccessToken();
         log.setAction(AccessAction.LOGIN);
         log.setUserAgent("USER_AGENT");
         log.setAddress("http:127.0.0.1:9000");
@@ -37,7 +37,7 @@ public class AccessLogRepositoryTest {
         log.setUsername("unknown");
         log.setUserId(1L);
 
-        final AccessLog log_2 = repo.insert(log);
+        final AccessToken log_2 = repo.insert(log);
         Assertions.assertNotNull(log_2);
         Assertions.assertNotNull(log_2.getAudit());
         Assertions.assertNotNull(log_2.getAction());
