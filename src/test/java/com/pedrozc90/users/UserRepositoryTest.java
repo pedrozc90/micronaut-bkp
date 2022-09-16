@@ -1,5 +1,6 @@
 package com.pedrozc90.users;
 
+import com.pedrozc90.core.models.Page;
 import com.pedrozc90.users.models.Profile;
 import com.pedrozc90.users.models.User;
 import com.pedrozc90.users.repo.UserRepository;
@@ -8,7 +9,6 @@ import jakarta.inject.Inject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
 import java.util.Optional;
 
 @MicronautTest
@@ -36,8 +36,9 @@ public class UserRepositoryTest {
 
     @Test
     public void fetch() {
-        final List<User> list = userRepository.fetch(1, 15, "");
-        Assertions.assertTrue(list.size() <= 15);
+        final Page<User> page = userRepository.fetch(1, 15, "");
+        Assertions.assertNotNull(page);
+        Assertions.assertTrue(page.getList().size() <= 15);
     }
 
     @Test

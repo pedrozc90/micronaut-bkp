@@ -1,14 +1,13 @@
 package com.pedrozc90.token.repo;
 
 import com.pedrozc90.core.data.CrudRepository;
+import com.pedrozc90.token.models.QRefreshToken;
 import com.pedrozc90.token.models.RefreshToken;
 import io.micronaut.transaction.annotation.ReadOnly;
 import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 import java.util.Optional;
 
@@ -17,19 +16,12 @@ import java.util.Optional;
 public class RefreshTokenRepository extends CrudRepository<RefreshToken, Long> {
 
     public RefreshTokenRepository(final EntityManager em) {
-        super(em, RefreshToken.class);
+        super(em, RefreshToken.class, QRefreshToken.refreshToken1);
     }
 
     @ReadOnly
     public Optional<RefreshToken> findByRefreshToken(final String refreshToken) {
-        try {
-            final String queryStr = "SELECT rt FROM RefreshToken as rt WHERE rt.refreshToken = :refresh_token";
-            final TypedQuery<RefreshToken> query = em.createQuery(queryStr, RefreshToken.class)
-                .setParameter("refresh_token", refreshToken);
-            return Optional.ofNullable(query.getSingleResult());
-        } catch (NoResultException e) {
-            return Optional.empty();
-        }
+        return findOne(QRefreshToken.refreshToken1.refreshToken.eq(refreshToken));
     }
 
     @Transactional

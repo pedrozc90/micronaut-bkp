@@ -1,10 +1,14 @@
 package com.pedrozc90.core.data;
 
 import com.pedrozc90.core.exceptions.ApplicationException;
+import com.pedrozc90.core.querydsl.JPAQuery;
+import com.querydsl.core.types.EntityPath;
+import com.querydsl.core.types.Predicate;
 import io.micronaut.transaction.annotation.ReadOnly;
 
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Objects;
@@ -15,10 +19,20 @@ public abstract class CrudRepository<E, ID> {
 
     protected EntityManager em;
     protected Class<E> clazz;
+    protected EntityPath<E> entity;
 
-    public CrudRepository(final EntityManager em, final Class<E> clazz) {
+    public CrudRepository(final EntityManager em, final Class<E> clazz, final EntityPath<E> entity) {
         this.em = em;
         this.clazz = clazz;
+        this.entity = entity;
+    }
+
+    public JPAQuery<E> createQuery() {
+        return new JPAQuery<E>(em);
+    }
+
+    public JPAQuery<E> builder() {
+        return createQuery().from(entity);
     }
 
     @ReadOnly
@@ -37,8 +51,45 @@ public abstract class CrudRepository<E, ID> {
         });
     }
 
+    @ReadOnly
+    public Optional<E> findOne(final Predicate predicate) {
+        final JPAQuery<E> query = createQuery().from(entity);
+        if (predicate != null) {
+            query.where(predicate);
+        }
+        return Optional.ofNullable(query
+            .select(entity)
+            .limit(1)
+            .fetchOne()
+        );
+    }
+
+    @ReadOnly
+    public long count(final Predicate predicate) {
+        final JPAQuery<E> query = createQuery().from(entity);
+        if (predicate != null) {
+            query.where(predicate);
+        }
+        return query.fetchCount();
+    }
+
+    @ReadOnly
+    public long count() {
+        return count(null);
+    }
+
+    @ReadOnly
+    public boolean exists(final Predicate predicate) {
+        return count(predicate) > 0;
+    }
+
+    @ReadOnly
+    public boolean exists() {
+        return count(null) > 0;
+    }
+
     @Transactional
-    public E save(@NotNull final E entity) {
+    public E save(@Valid @NotNull final E entity) {
         em.persist(entity);
         return entity;
     }

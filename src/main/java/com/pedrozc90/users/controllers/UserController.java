@@ -22,7 +22,6 @@ import javax.persistence.PersistenceException;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.net.URI;
-import java.util.List;
 
 @Slf4j
 @Secured(SecurityRule.IS_AUTHENTICATED)
@@ -40,9 +39,7 @@ public class UserController {
     public Page<User> fetch(@QueryValue(value = "page", defaultValue = "1") final int page,
                             @QueryValue(value = "rpp", defaultValue = "15") final int rpp,
                             @Nullable @QueryValue(value = "q") final String q) {
-        final List<User> users = userRepository.fetch(page, rpp, q);
-        final Long total = userRepository.count(page, rpp, q);
-        return Page.create(users, total, page, rpp);
+        return userRepository.fetch(page, rpp, q);
     }
 
     @Post("/")

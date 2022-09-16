@@ -3,6 +3,7 @@ package com.pedrozc90.token.repo;
 import com.pedrozc90.core.data.CrudRepository;
 import com.pedrozc90.token.models.AccessAction;
 import com.pedrozc90.token.models.AccessToken;
+import com.pedrozc90.token.models.QAccessToken;
 import io.micronaut.core.annotation.Nullable;
 import io.micronaut.http.HttpHeaders;
 import io.micronaut.http.HttpRequest;
@@ -22,7 +23,7 @@ import java.util.Optional;
 public class AccessTokenRepository extends CrudRepository<AccessToken, Long> {
 
     public AccessTokenRepository(final EntityManager em) {
-        super(em, AccessToken.class);
+        super(em, AccessToken.class, QAccessToken.accessToken1);
     }
 
     public void register(@NotNull final AccessAction action, @NotNull final HttpRequest<?> request) {

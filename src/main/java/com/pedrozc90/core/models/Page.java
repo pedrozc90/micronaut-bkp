@@ -2,6 +2,7 @@ package com.pedrozc90.core.models;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.pedrozc90.core.querydsl.JPAQuery;
 import io.micronaut.core.annotation.Introspected;
 import lombok.*;
 
@@ -43,11 +44,11 @@ public class Page<E> implements Serializable {
     @JsonProperty("total")
     private long total = 0;
 
-    public static <E> Page<E> create(final List<E> list, final long total, final int page, final int rpp) {
-        // final long total = query.fetchCount();
-        // final List<E> list = query.limit(rpp + 1)
-        //     .offset((page - 1L) * rpp)
-        //     .fetch();
+    public static <E> Page<E> create(final JPAQuery<E> query, final int page, final int rpp) {
+        final long total = query.fetchCount();
+        final List<E> list = query.limit(rpp + 1)
+            .offset((page - 1L) * rpp)
+            .fetch();
         boolean next = false;
         if (list.size() > rpp) {
             list.remove(list.size() - 1);
