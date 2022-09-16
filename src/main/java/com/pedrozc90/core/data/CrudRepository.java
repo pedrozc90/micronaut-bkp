@@ -1,25 +1,66 @@
 package com.pedrozc90.core.data;
 
 import com.pedrozc90.core.exceptions.ApplicationException;
+import io.micronaut.transaction.annotation.ReadOnly;
 
+import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-public interface CrudRepository<E> {
+public abstract class CrudRepository<E, ID> {
 
-    Optional<E> findById(final Long id);
+    protected EntityManager em;
+    protected Class<E> clazz;
 
-    E findByIdOrThrowException(final long id) throws ApplicationException;
+    public CrudRepository(final EntityManager em, final Class<E> clazz) {
+        this.em = em;
+        this.clazz = clazz;
+    }
 
-    E save(@NotNull final E entity);
+    @ReadOnly
+    public Optional<E> findById(final ID id) {
+        if (id == null) return Optional.empty();
+        return Optional.ofNullable(em.find(clazz, id));
+    }
 
-    List<E> saveMany(@NotNull final List<E> entities) throws ApplicationException;
+    public E findByIdOrThrowException(final ID id) throws ApplicationException {
+        return findById(id).orElseThrow(() -> {
+            if (id == null) {
+                return ApplicationException.of("%s not found.", clazz.getSimpleName().toLowerCase());
+            }
+            return ApplicationException.of("%s (id: %d) not found.", clazz.getSimpleName().toLowerCase(), id);
+        });
+    }
 
-    void deleteById(final Long id);
+    @Transactional
+    public E save(@NotNull final E entity) {
+        em.persist(entity);
+        return entity;
+    }
 
-    void delete(@NotNull final E entity);
+    public List<E> saveMany(@NotNull final List<E> entities) throws ApplicationException {
+        return entities.stream()
+            .filter(Objects::nonNull)
+            .map(this::save)
+            .collect(Collectors.toList());
+    }
 
-    void resetSequence();
+    @Transactional
+    public E update(@NotNull final E entity) {
+        return em.merge(entity);
+    }
+
+    @Transactional
+    public void removeById(final ID id) {
+        findById(id).ifPresent(this::remove);
+    }
+
+    public void remove(@NotNull @NotNull final E entity) {
+        em.remove(entity);
+    }
 
 }

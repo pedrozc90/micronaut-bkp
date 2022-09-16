@@ -2,6 +2,14 @@ micronaut:
     application:
         name: blank
         max: 100
+    router:
+        static-resources:
+            swagger:
+                paths: classpath:META-INF/swagger
+                mapping: /swagger/**
+            swagger-ui:
+                paths: classpath:META-INF/swagger/views/swagger-ui
+                mapping: /swagger-ui/**
     server:
         port: 9000
         cors:
@@ -10,6 +18,11 @@ micronaut:
         client:
             read-timeout: 3m
     security:
+        intercept-url-map:
+            -   access: isAnonymous()
+                pattern: /swagger/**
+            -   access: isAnonymous()
+                pattern: /swagger-ui/**
         authentication: bearer
         token:
             jwt:
@@ -19,7 +32,7 @@ micronaut:
                             secret: ${JWT_GENERATOR_SIGNATURE_SECRET:`SiDPL3UYMIxD7w9TzMTquiaf3yuiRR4R6qHk7hqvdiqcvonXiVuBuus499PjQaD0`}
                 generator:
                     access-token:
-                        expiration: 14400
+                        expiration: 86400   # in seconds (86400s = 24h)
                     refresh-token:
                         secret: ${JWT_GENERATOR_SIGNATURE_SECRET:`SiDPL3UYMIxD7w9TzMTquiaf3yuiRR4R6qHk7hqvdiqcvonXiVuBuus499PjQaD0`}
 

@@ -1,6 +1,7 @@
 package com.pedrozc90.core.authentication;
 
 import com.pedrozc90.core.utils.AuthenticationUtils;
+import com.pedrozc90.users.models.Profile;
 import com.pedrozc90.users.models.User;
 import com.pedrozc90.users.repo.UserRepository;
 import io.micronaut.core.annotation.Nullable;
@@ -36,21 +37,23 @@ public class AuthenticationProviderUserPassword implements AuthenticationProvide
             final String passwordHashed = DigestUtils.md5Hex(password);
 
             final Optional<User> opt = userRepo.findByCredentials(username, passwordHashed);
-
-            if (opt.isPresent()) {
-                final User user = opt.get();
-                if (user.isNotActive()) {
-                    emitter.error(AuthenticationResponse.exception(AuthenticationFailureReason.ACCOUNT_LOCKED));
-                } else {
-                    final Map<String, Object> attributes = new HashMap<>();
-                    AuthenticationUtils.setUserId(user, attributes);
-
-                    emitter.next(AuthenticationResponse.success(username, attributes));
-                }
-                emitter.complete();
-            } else {
+            if (opt.isEmpty()) {
                 emitter.error(AuthenticationResponse.exception(AuthenticationFailureReason.USER_NOT_FOUND));
+                return;
             }
+
+            final User user = opt.get();
+            if (user.isNotActive()) {
+                emitter.error(AuthenticationResponse.exception(AuthenticationFailureReason.ACCOUNT_LOCKED));
+                return;
+            }
+
+            final Profile profile = user.getProfile();
+            final Map<String, Object> attributes = new HashMap<>();
+            AuthenticationUtils.setUserId(user, attributes);
+
+            emitter.next(AuthenticationResponse.success(username, profile.getRoles(), attributes));
+            emitter.complete();
         }, FluxSink.OverflowStrategy.ERROR);
     }
 

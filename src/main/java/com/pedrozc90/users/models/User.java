@@ -24,9 +24,6 @@ import java.io.Serializable;
 @Builder(toBuilder = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(onlyExplicitlyIncluded = true)
-@NamedNativeQueries({
-    @NamedNativeQuery(name = "reset_sequence", query = "CALL reset_table_sequence('users');")
-})
 public class User implements Serializable, Auditable {
 
     @ToString.Include
@@ -89,7 +86,7 @@ public class User implements Serializable, Auditable {
         return passwordConfirm;
     }
 
-    @JsonProperty("passwordConfirm")
+    @JsonProperty("password_confirm")
     public void setPasswordConfirm(final String passwordConfirm) {
         this.passwordConfirm = passwordConfirm;
     }

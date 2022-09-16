@@ -1,11 +1,9 @@
-package com.pedrozc90.logs.models;
+package com.pedrozc90.token.models;
 
 import com.pedrozc90.core.audit.Audit;
 import com.pedrozc90.core.audit.Auditable;
 import com.pedrozc90.core.audit.listeners.AuditListener;
-import com.pedrozc90.users.models.User;
 import lombok.*;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -13,7 +11,7 @@ import java.io.Serializable;
 
 @Entity
 @EntityListeners({ AuditListener.class })
-@Table(name = "access_logs", schema = "public")
+@Table(name = "access_token", schema = "public")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -21,11 +19,11 @@ import java.io.Serializable;
 @Builder(toBuilder = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(onlyExplicitlyIncluded = true)
-public class AccessLog implements Serializable, Auditable {
+public class AccessToken implements Serializable, Auditable {
 
     @ToString.Include
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "access_logs_id_seq")
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "access_token_id_seq")
     private Long id;
 
     @Embedded
@@ -46,24 +44,15 @@ public class AccessLog implements Serializable, Auditable {
     private AccessAction action = AccessAction.LOGIN;
 
     @ToString.Include
-    @Column(name = "token")
-    private String token;
+    @Column(name = "username", length = 32, nullable = false)
+    private String username;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    // @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "access_logs_user_fkey"))
-    @JoinColumn(name = "user_id")
-    private User user;
+    @ToString.Include
+    @Column(name = "access_token", columnDefinition = "text")
+    private String accessToken;
 
-    public void setUserAgent(final String userAgent) {
-        this.userAgent = StringUtils.substring(userAgent, 0, 255);
-    }
-
-    public void setAddress(final String address) {
-        this.address = StringUtils.substring(address, 0, 255);
-    }
-
-    public void setToken(final String token) {
-        this.token = StringUtils.substring(token, 0, 255);
-    }
+    @ToString.Include
+    @Column(name = "refresh_token", columnDefinition = "text")
+    private String refreshToken;
 
 }

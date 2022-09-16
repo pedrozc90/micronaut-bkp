@@ -174,7 +174,7 @@ public class UserControllerTest {
             Assertions.assertEquals(HttpStatus.OK, response.getStatus());
         }
 
-        userRepository.resetSequence();
+        // userRepository.resetSequence();
     }
 
 }

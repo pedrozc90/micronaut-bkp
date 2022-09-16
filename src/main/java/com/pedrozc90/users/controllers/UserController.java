@@ -83,7 +83,7 @@ public class UserController {
                     .badRequest();
             }
 
-            userRepository.delete(user);
+            userRepository.remove(user);
 
             final ResultContent<?> rs = ResultContent.of().message("User (id: %s) successfully deleted.", user.getId());
 
