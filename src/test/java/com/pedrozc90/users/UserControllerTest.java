@@ -1,5 +1,7 @@
 package com.pedrozc90.users;
 
+import com.pedrozc90.core.models.Page;
+import com.pedrozc90.users.models.Profile;
 import com.pedrozc90.users.models.User;
 import com.pedrozc90.users.models.UserData;
 import com.pedrozc90.users.models.UserRegistration;
@@ -51,13 +53,36 @@ public class UserControllerTest {
         Assertions.assertNotNull(bearer);
         Assertions.assertNotNull(bearer.getAccessToken());
         accessToken = bearer.getAccessToken();
+
+        {
+            userRepository.findByEmail("john@email.com").ifPresent((v) -> userRepository.remove(v));
+            userRepository.findByEmail("john.micronaut@email.com").ifPresent((v) -> userRepository.remove(v));
+            userRepository.findByEmail("mary@email.com").ifPresent((v) -> userRepository.remove(v));
+        }
+    }
+
+    @Test
+    public void testFetchAListOfUsers() {
+        final HttpRequest<?> request = HttpRequest.GET(String.format("/users?page=%d&rpp=%d", 1, 15))
+            .bearerAuth(accessToken);
+        final HttpResponse<?> response = blockingClient.exchange(request, Argument.of(Page.class, User.class));
+        Assertions.assertNotNull(response);
+        Assertions.assertEquals(HttpStatus.OK, response.getStatus());
+
+        final Page<?> page = (Page<?>) response.body();
+        Assertions.assertNotNull(page);
+        Assertions.assertEquals(1, page.getPage());
+        Assertions.assertEquals(15, page.getRpp());
+        Assertions.assertFalse(page.isNext());
+        Assertions.assertFalse(page.isPrev());
+        Assertions.assertNotNull(page.getList());
+        Assertions.assertTrue(page.getList().size() <= 15);
     }
 
     @Test
     public void supplyAnInvalidOrderTriggersValidationFailure() {
         final HttpClientResponseException e = Assertions.assertThrows(HttpClientResponseException.class, () -> {
-            final HttpRequest<?> request = HttpRequest.GET("/users/list?order=foo")
-                .bearerAuth(accessToken);
+            final HttpRequest<?> request = HttpRequest.GET("/users/list?order=foo").bearerAuth(accessToken);
             blockingClient.exchange(request);
         });
         Assertions.assertNotNull(e);
@@ -96,7 +121,12 @@ public class UserControllerTest {
         final List<Long> ids = new ArrayList<>();
 
         {
-            final UserRegistration cmd = new UserRegistration("john@email.com", "john", "1", "1");
+            final UserRegistration cmd = UserRegistration.builder()
+                .email("john@email.com")
+                .username("john")
+                .password("1")
+                .passwordConfirm("1")
+                .build();
             final HttpRequest<?> request = HttpRequest.POST("/users", cmd).bearerAuth(accessToken);
             final HttpResponse<User> response = blockingClient.exchange(request, User.class);
 
@@ -110,7 +140,12 @@ public class UserControllerTest {
         }
 
         {
-            final UserRegistration cmd = new UserRegistration("mary@email.com", "mary", "1", "1");
+            final UserRegistration cmd = UserRegistration.builder()
+                .email("mary@email.com")
+                .username("mary")
+                .password("1")
+                .passwordConfirm("1")
+                .build();
             final HttpRequest<?> request = HttpRequest.POST("/users", cmd).bearerAuth(accessToken);
             final HttpResponse<User> response = blockingClient.exchange(request, User.class);
 
@@ -137,7 +172,13 @@ public class UserControllerTest {
             Assertions.assertEquals(1, user.getAudit().getVersion());
 
             // update
-            final UserData cmd = new UserData(id, user.getAudit(), "josh@email.com", user.getProfile(), "josh", true);
+            final UserData cmd = UserData.builder()
+                .id(id)
+                .email("john.micronaut@email.com")
+                .username("john")
+                .profile(Profile.NORMAL)
+                .active(false)
+                .build();
 
             final HttpRequest<?> request2 = HttpRequest.PUT("/users", cmd).bearerAuth(accessToken);
             final HttpResponse<User> response2 = blockingClient.exchange(request2, User.class);
@@ -154,17 +195,18 @@ public class UserControllerTest {
             final User user = blockingClient.retrieve(request, User.class);
 
             Assertions.assertNotNull(user);
-            Assertions.assertEquals("josh", user.getUsername());
-            Assertions.assertEquals("josh@email.com", user.getEmail());
+            Assertions.assertEquals("john", user.getUsername());
+            Assertions.assertEquals("john.micronaut@email.com", user.getEmail());
+            Assertions.assertFalse(user.isActive());
             Assertions.assertNotNull(user.getAudit());
             Assertions.assertEquals(2, user.getAudit().getVersion());
         }
 
         {
             final HttpRequest<?> request = HttpRequest.GET("/users").bearerAuth(accessToken);
-            final List<User> users = blockingClient.retrieve(request, Argument.of(List.class, User.class));
-
-            Assertions.assertEquals(3, users.size());
+            final Page<User> page = blockingClient.retrieve(request, Argument.of(Page.class, User.class));
+            Assertions.assertNotNull(page);
+            Assertions.assertTrue(page.getList().size() > 0);
         }
 
         for (final Long id : ids) {

@@ -8,6 +8,7 @@ import jakarta.inject.Inject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Optional;
 
 @MicronautTest
@@ -28,9 +29,15 @@ public class UserRepositoryTest {
         final User user = userOpt.get();
         Assertions.assertEquals(userId, user.getId());
         Assertions.assertEquals("master", user.getUsername());
-        Assertions.assertEquals("admin@email.com", user.getEmail());
+        Assertions.assertEquals("pedrozc90+master@gmail.com", user.getEmail());
         Assertions.assertEquals(Profile.MASTER, user.getProfile());
         Assertions.assertNotNull(user.getAudit());
+    }
+
+    @Test
+    public void fetch() {
+        final List<User> list = userRepository.fetch(1, 15, "");
+        Assertions.assertTrue(list.size() <= 15);
     }
 
     @Test
@@ -40,6 +47,12 @@ public class UserRepositoryTest {
             final User user = userRepository.findByIdOrThrowException(userId);
             Assertions.assertNull(user);
         });
+    }
+
+    @Test
+    public void validateEmail() {
+        boolean valid = userRepository.validateEmail("pedrozc90+master@gmail.com");
+        Assertions.assertTrue(valid);
     }
 
 }

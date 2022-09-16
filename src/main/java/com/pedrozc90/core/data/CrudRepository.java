@@ -30,9 +30,9 @@ public abstract class CrudRepository<E, ID> {
     public E findByIdOrThrowException(final ID id) throws ApplicationException {
         return findById(id).orElseThrow(() -> {
             if (id == null) {
-                return ApplicationException.of("%s not found.", clazz.getSimpleName().toLowerCase());
+                return ApplicationException.of("%s not found.", clazz.getSimpleName().toLowerCase()).notFound();
             }
-            return ApplicationException.of("%s (id: %d) not found.", clazz.getSimpleName().toLowerCase(), id);
+            return ApplicationException.of("%s (id: %d) not found.", clazz.getSimpleName().toLowerCase(), id).notFound();
         });
     }
 
@@ -59,6 +59,7 @@ public abstract class CrudRepository<E, ID> {
         findById(id).ifPresent(this::remove);
     }
 
+    @Transactional
     public void remove(@NotNull @NotNull final E entity) {
         em.remove(entity);
     }

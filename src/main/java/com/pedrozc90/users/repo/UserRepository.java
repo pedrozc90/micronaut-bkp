@@ -3,8 +3,11 @@ package com.pedrozc90.users.repo;
 import com.pedrozc90.core.data.CrudRepository;
 import com.pedrozc90.users.models.User;
 import com.pedrozc90.users.models.UserData;
+import com.pedrozc90.users.models.UserRegistration;
 import io.micronaut.transaction.annotation.ReadOnly;
 import jakarta.inject.Singleton;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -46,10 +49,85 @@ public class UserRepository extends CrudRepository<User, Long> {
     }
 
     @ReadOnly
-    public List<User> fetch() {
-        final String queryStr = "SELECT s FROM User as s ORDER BY s.id ASC";
+    public Optional<User> findByEmail(final String email) {
+        try {
+            final String queryStr = "SELECT s FROM User as s WHERE s.email = :email";
+            final TypedQuery<User> query = em.createQuery(queryStr, User.class)
+                .setParameter("email", email);
+            return Optional.ofNullable(query.getSingleResult());
+        } catch (NoResultException e) {
+            return Optional.empty();
+        }
+    }
+
+    @ReadOnly
+    public boolean validateEmail(final String email) {
+        try {
+            final String queryStr = "SELECT 1 FROM User as s WHERE lower(s.email) = lower(:email)";
+            final Integer result = em.createQuery(queryStr, Integer.class)
+                .setParameter("email", email)
+                .getSingleResult();
+            return (result == 1);
+        } catch (NoResultException e) {
+            return false;
+        }
+    }
+
+    @ReadOnly
+    public boolean validateUsername(final String username) {
+        try {
+            final String queryStr = "SELECT 1 FROM User as s WHERE lower(s.username) = lower(:username)";
+            final Integer result = em.createQuery(queryStr, Integer.class)
+                .setParameter("username", username)
+                .getSingleResult();
+            return (result == 1);
+        } catch (NoResultException e) {
+            return false;
+        }
+    }
+
+    @ReadOnly
+    public List<User> fetch(final int page, final int rpp, final String q) {
+        String queryStr = "SELECT s FROM User as s WHERE 1 = 1 ";
+
+        if (StringUtils.isNotBlank(q)) {
+            queryStr += "lower(s.email) LIKE :email " +
+                "lower(s.username) LIKE :username ";
+        }
+
+        queryStr += "ORDER BY s.id ASC";
+
         final TypedQuery<User> query = em.createQuery(queryStr, User.class);
-        return query.getResultList();
+
+        if (StringUtils.isNotBlank(q)) {
+            final String qSearch = StringUtils.lowerCase("%" + q + "%");
+            query.setParameter("email", qSearch)
+                .setParameter("username", qSearch);
+        }
+
+        return query.setMaxResults(rpp + 1)
+            .setFirstResult((page - 1) * rpp)
+            .getResultList();
+    }
+
+    @ReadOnly
+    public Long count(final int page, final int rpp, final String q) {
+        String queryStr = "SELECT count(distinct s.id) FROM User as s WHERE 1 = 1 ";
+
+        if (StringUtils.isNotBlank(q)) {
+            queryStr += "lower(s.email) LIKE :email " +
+                "lower(s.username) LIKE :username ";
+        }
+
+        final TypedQuery<Long> query = em.createQuery(queryStr, Long.class);
+
+        if (StringUtils.isNotBlank(q)) {
+            final String qSearch = StringUtils.lowerCase("%" + q + "%");
+            query.setParameter("email", qSearch)
+                .setParameter("username", qSearch);
+        }
+
+        return query.getSingleResult();
     }
 
     @Transactional
@@ -61,6 +139,16 @@ public class UserRepository extends CrudRepository<User, Long> {
         user.setActive(data.isActive());
         user.setAudit(data.getAudit());
         return super.update(user);
+    }
+
+    @Transactional
+    public User register(final UserRegistration data) {
+        final User user = new User();
+        user.setEmail(data.getEmail());
+        user.setUsername(data.getUsername());
+        user.setPassword(DigestUtils.md5Hex(data.getPassword()));
+        user.setPasswordConfirm(DigestUtils.md5Hex(data.getPasswordConfirm()));
+        return super.save(user);
     }
 
 }
