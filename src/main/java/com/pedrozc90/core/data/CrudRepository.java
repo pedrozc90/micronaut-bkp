@@ -27,6 +27,7 @@ public abstract class CrudRepository<E, ID> {
         return Optional.ofNullable(em.find(clazz, id));
     }
 
+    @ReadOnly
     public E findByIdOrThrowException(final ID id) throws ApplicationException {
         return findById(id).orElseThrow(() -> {
             if (id == null) {
@@ -42,6 +43,7 @@ public abstract class CrudRepository<E, ID> {
         return entity;
     }
 
+    @Transactional
     public List<E> saveMany(@NotNull final List<E> entities) throws ApplicationException {
         return entities.stream()
             .filter(Objects::nonNull)
