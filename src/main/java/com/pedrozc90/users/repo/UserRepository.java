@@ -69,10 +69,9 @@ public class UserRepository extends CrudRepository<User, Long> {
     @Transactional
     public User update(final User user, final UserData data) {
         if (user == null) return null;
-        Optional.ofNullable(data.getAudit()).ifPresent(user::setAudit);
-        Optional.ofNullable(data.getEmail()).ifPresent(user::setEmail);
-        Optional.ofNullable(data.getProfile()).ifPresent(user::setProfile);
-        Optional.ofNullable(data.getUsername()).ifPresent(user::setUsername);
+        user.setUsername(data.getUsername());
+        user.setEmail(data.getEmail());
+        user.setProfile(data.getProfile());
         user.setActive(data.isActive());
         user.setTenant(data.getTenant());
         return super.update(user);

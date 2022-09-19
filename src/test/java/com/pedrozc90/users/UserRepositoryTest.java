@@ -1,7 +1,7 @@
 package com.pedrozc90.users;
 
-import com.pedrozc90.core.models.Page;
 import com.pedrozc90.core.exceptions.ApplicationException;
+import com.pedrozc90.core.models.Page;
 import com.pedrozc90.users.models.Profile;
 import com.pedrozc90.users.models.User;
 import com.pedrozc90.users.repo.UserRepository;

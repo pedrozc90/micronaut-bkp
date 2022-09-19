@@ -49,7 +49,10 @@ public class AccessTokenRepository extends CrudRepository<AccessToken, Long> {
             .map(StringUtils::trimToNull)
             .orElse(null);
 
-        final String username = Optional.ofNullable(authentication).map(Principal::getName).orElse(null);
+        final String username = Optional.ofNullable(authentication)
+            .map(Principal::getName)
+            .or(() -> request.getUserPrincipal().map(Principal::getName))
+            .orElse(null);
 
         final AccessToken at = new AccessToken();
         at.setAction(action);

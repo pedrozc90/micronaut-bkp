@@ -18,6 +18,7 @@ import io.micronaut.http.annotation.Produces;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.rules.SecurityRule;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.inject.Inject;
 
 import java.security.Principal;
@@ -63,7 +64,7 @@ public class IndexController {
     @Get("/secured")
     @Produces(MediaType.TEXT_PLAIN)
     @Secured(SecurityRule.IS_AUTHENTICATED)
-    public String secured(@Header(HttpHeaders.AUTHORIZATION) final String authorization, final Principal principal) {
+    public String secured(@Parameter(hidden = true) @Header(HttpHeaders.AUTHORIZATION) final String authorization, final Principal principal) {
         return principal.getName();
     }
 

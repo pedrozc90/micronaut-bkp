@@ -45,16 +45,16 @@ public class AuthenticationTest {
     @Test
     @Order(1)
     public void createTemporaryUser() {
-        User user = new User();
+        final User user = new User();
         user.setEmail(String.format("%s@email.com", username));
         user.setUsername(username);
         user.setPassword(DigestUtils.md5Hex(password));
         user.setActive(true);
-        user = userRepository.save(user);
+        final User newUser = userRepository.save(user);
 
-        Assertions.assertNotNull(user);
-        Assertions.assertEquals(username, user.getUsername());
-        Assertions.assertTrue(user.isActive());
+        Assertions.assertNotNull(newUser);
+        Assertions.assertEquals(username, newUser.getUsername());
+        Assertions.assertTrue(newUser.isActive());
     }
 
     @Test
