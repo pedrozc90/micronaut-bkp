@@ -48,6 +48,7 @@ public class UserRegistration {
     @JsonProperty("password_confirm")
     private String passwordConfirm;
 
+    @Schema(name = "tenant")
     @JsonProperty("tenant")
     private Tenant tenant;
 

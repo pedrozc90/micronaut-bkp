@@ -64,6 +64,7 @@ public class UserData implements Serializable, Auditable {
     @JsonProperty("active")
     private boolean active = true;
 
+    @Schema(name = "tenant")
     @JsonProperty("tenant")
     private Tenant tenant;
 

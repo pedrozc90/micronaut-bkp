@@ -4,9 +4,7 @@ import com.pedrozc90.core.authentication.AuthenticationContext;
 import com.pedrozc90.core.models.Context;
 import com.pedrozc90.core.models.Ping;
 import com.pedrozc90.core.models.ResultContent;
-import com.pedrozc90.tenants.models.Tenant;
 import com.pedrozc90.tenants.repo.TenantRepository;
-import com.pedrozc90.users.models.User;
 import com.pedrozc90.users.repo.UserRepository;
 import io.micronaut.http.HttpHeaders;
 import io.micronaut.http.HttpResponse;
@@ -22,7 +20,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.inject.Inject;
 
 import java.security.Principal;
-import java.util.Optional;
 
 @Controller("/")
 @Secured(SecurityRule.IS_ANONYMOUS)
@@ -48,15 +45,15 @@ public class IndexController {
     @Get("/context")
     @Secured(SecurityRule.IS_AUTHENTICATED)
     public HttpResponse<ResultContent<Context>> context(final Authentication authentication) {
-        final Long userId = AuthenticationContext.getUserId();      // AuthenticationUtils.getUserId(authentication);
-        final Optional<User> userOpt = userRepository.findById(userId);
-
-        final Long tenantId = AuthenticationContext.getTenantId();  // AuthenticationUtils.getTenantId(authentication);
-        final Optional<Tenant> tenantOpt = tenantRepository.findById(tenantId);
-
         final Context context = new Context();
-        userOpt.ifPresent(context::setUser);
-        tenantOpt.ifPresent(context::setTenant);
+
+        // final Long userId = AuthenticationUtils.getUserId(authentication);
+        final Long userId = AuthenticationContext.getUserId();
+        userRepository.findById(userId).ifPresent(context::setUser);
+
+        // final Long tenantId = AuthenticationUtils.getTenantId(authentication);
+        final Long tenantId = AuthenticationContext.getTenantId();
+        tenantRepository.findById(tenantId).ifPresent(context::setTenant);
 
         return HttpResponse.ok(ResultContent.of(context));
     }
