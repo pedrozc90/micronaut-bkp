@@ -22,8 +22,11 @@ CREATE TABLE IF NOT EXISTS public.access_token (
     CONSTRAINT access_token_pkey PRIMARY KEY (id)
 );
 
+CREATE INDEX IF NOT EXISTS access_token_username_idx ON access_token (username);
+
 -- rollback DROP TABLE IF EXISTS access_token;
 -- rollback DROP SEQUENCE IF EXISTS access_token_id_seq;
+-- rollback DROP INDEX IF EXISTS access_token_username_idx;
 
 -- changeset pedrozc90:2 context:dev,prd
 
@@ -44,5 +47,8 @@ CREATE TABLE IF NOT EXISTS public.refresh_token (
     CONSTRAINT refresh_token_pkey PRIMARY KEY (id)
 );
 
+CREATE INDEX IF NOT EXISTS refresh_token_revoked_username_idx ON refresh_token (revoked, username);
+
 -- rollback DROP TABLE IF EXISTS refresh_token;
 -- rollback DROP SEQUENCE IF EXISTS refresh_token_id_seq;
+-- rollback DROP INDEX IF EXISTS refresh_token_revoked_username_idx;

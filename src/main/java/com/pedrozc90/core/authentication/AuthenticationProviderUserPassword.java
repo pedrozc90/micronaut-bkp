@@ -36,13 +36,13 @@ public class AuthenticationProviderUserPassword implements AuthenticationProvide
 
             final String passwordHashed = DigestUtils.md5Hex(password);
 
-            final Optional<User> opt = userRepo.findByCredentials(username, passwordHashed);
-            if (opt.isEmpty()) {
+            final Optional<User> userOpt = userRepo.findByCredentials(username, passwordHashed);
+            if (userOpt.isEmpty()) {
                 emitter.error(AuthenticationResponse.exception(AuthenticationFailureReason.USER_NOT_FOUND));
                 return;
             }
 
-            final User user = opt.get();
+            final User user = userOpt.get();
             if (user.isNotActive()) {
                 emitter.error(AuthenticationResponse.exception(AuthenticationFailureReason.ACCOUNT_LOCKED));
                 return;

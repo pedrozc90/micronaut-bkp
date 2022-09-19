@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.pedrozc90.core.audit.Audit;
 import com.pedrozc90.core.audit.Auditable;
 import com.pedrozc90.core.audit.listeners.AuditListener;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import javax.persistence.*;
@@ -29,10 +30,14 @@ public class User implements Serializable, Auditable {
     @ToString.Include
     @Id
     // @SequenceGenerator(name = "users_id_seq", sequenceName = "users_id_seq", schema = "public", initialValue = 1)
+    @Schema(name = "id")
+    @JsonProperty("id")
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "users_id_seq")
     private Long id;
 
     @Embedded
+    @Schema(name = "audit")
+    @JsonProperty("audit")
     private Audit audit = new Audit();
 
     @ToString.Include
@@ -40,12 +45,16 @@ public class User implements Serializable, Auditable {
     @NotBlank
     @Email
     @Size(max = 255)
+    @Schema(name = "audit")
+    @JsonProperty("audit")
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
     @ToString.Include
     @NotNull
     @Enumerated(EnumType.STRING)
+    @Schema(name = "profile")
+    @JsonProperty("profile")
     @Column(name = "profile", length = 16, nullable = false)
     private Profile profile = Profile.NORMAL;
 
@@ -53,6 +62,8 @@ public class User implements Serializable, Auditable {
     @NotNull
     @NotBlank
     @Size(max = 32)
+    @Schema(name = "username")
+    @JsonProperty("username")
     @Column(name = "username", length = 32, nullable = false, unique = true)
     private String username;
 
@@ -60,6 +71,7 @@ public class User implements Serializable, Auditable {
     @NotNull
     @NotBlank
     @Size(max = 32)
+    @Schema(name = "password")
     @Column(name = "password", length = 32, nullable = false)
     private String password;
 
@@ -68,6 +80,8 @@ public class User implements Serializable, Auditable {
 
     @ToString.Include
     @NotNull
+    @Schema(name = "active")
+    @JsonProperty("active")
     @Column(name = "active", columnDefinition = "boolean", nullable = false)
     private boolean active = true;
 
@@ -94,15 +108,6 @@ public class User implements Serializable, Auditable {
     @JsonIgnore
     public boolean isNotActive() {
         return !isActive();
-    }
-
-    public static User merge(final User user, final UserData data) {
-        user.setUsername(data.getUsername());
-        user.setEmail(data.getEmail());
-        user.setProfile(data.getProfile());
-        user.setActive(data.isActive());
-        user.setAudit(data.getAudit());
-        return user;
     }
 
 }

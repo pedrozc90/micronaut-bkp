@@ -215,8 +215,6 @@ public class UserControllerTest {
             Assertions.assertNotNull(response);
             Assertions.assertEquals(HttpStatus.OK, response.getStatus());
         }
-
-        // userRepository.resetSequence();
     }
 
 }

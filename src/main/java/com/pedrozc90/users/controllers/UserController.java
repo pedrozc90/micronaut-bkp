@@ -67,10 +67,7 @@ public class UserController {
     @Put("/")
     public HttpResponse<?> update(@NotNull @Valid @Body final UserData data) {
         final Long id = data.getId();
-
-        final User tmp = User.merge(userRepository.findByIdOrThrowException(id), data);
-
-        final User user = userRepository.update(tmp);
+        final User user = userRepository.update(userRepository.findByIdOrThrowException(id), data);
         return HttpResponse
             .ok(user)
             .headers((headers) -> headers.location(location(id)));

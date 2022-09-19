@@ -25,7 +25,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @OpenAPIInclude(
     classes = {
         io.micronaut.security.endpoints.LoginController.class,
-        io.micronaut.security.endpoints.LogoutController.class,
+        // io.micronaut.security.endpoints.LogoutController.class,
         io.micronaut.security.token.jwt.endpoints.OauthController.class
     },
     tags = @Tag(name = "Security")
