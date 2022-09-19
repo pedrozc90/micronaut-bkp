@@ -107,7 +107,7 @@ public class TenantControllerTest {
             Assertions.assertEquals(HttpStatus.OK, response.getStatus());
         }
 
-        tenantRepository.resetSequence();
+        // tenantRepository.resetSequence();
     }
 
 }

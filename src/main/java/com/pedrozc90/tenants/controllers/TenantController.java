@@ -1,10 +1,7 @@
 package com.pedrozc90.tenants.controllers;
 
 import com.pedrozc90.core.models.Page;
-import com.pedrozc90.core.models.Pagination;
 import com.pedrozc90.core.models.ResultContent;
-import com.pedrozc90.core.querydsl.JPAQuery;
-import com.pedrozc90.tenants.models.QTenant;
 import com.pedrozc90.tenants.models.Tenant;
 import com.pedrozc90.tenants.models.TenantData;
 import com.pedrozc90.tenants.models.TenantRegistration;
@@ -16,9 +13,7 @@ import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
-import io.micronaut.transaction.annotation.ReadOnly;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.PersistenceException;
 import javax.validation.Valid;
@@ -38,22 +33,11 @@ public class TenantController {
     }
 
     @Get("/")
-    @ReadOnly
-    public Page<Tenant> fetch(@QueryValue(value = "page", defaultValue = "1") final int page,
-                              @QueryValue(value = "rpp", defaultValue = "15") final int rpp,
+    public Page<Tenant> fetch(@Nullable @QueryValue(value = "page", defaultValue = "1") final int page,
+                              @Nullable @QueryValue(value = "rpp", defaultValue = "15") final int rpp,
                               @Nullable @QueryValue(value = "q") final String q) {
         // final Long tenantId = AuthContext.getTenantId();
-        tenantRepository.setAllTenantsSession();
-        final JPAQuery<Tenant> query = tenantRepository.builder();
-
-        if (StringUtils.isNotBlank(q)) {
-            query.where(QTenant.tenant.name.containsIgnoreCase(q));
-        }
-
-        query.orderBy(QTenant.tenant.id.asc())
-            .select(QTenant.tenant);
-
-        return Pagination.fetch(query, page, rpp);
+        return tenantRepository.fetch(page, rpp, q);
     }
 
     @Post("/")
@@ -73,10 +57,8 @@ public class TenantController {
     public HttpResponse<Tenant> update(@Valid @NotNull @Body final TenantData data) {
         final Long id = data.getId();
 
-        final Tenant tmp = tenantRepository.findByIdOrThrowException(id);
-        Tenant.merge(tmp, data);
+        final Tenant tenant = tenantRepository.update(tenantRepository.findByIdOrThrowException(id), data);
 
-        final Tenant tenant = tenantRepository.save(tmp);
         return HttpResponse
             .ok(tenant)
             .headers((headers) -> headers.location(location(id)));
@@ -91,7 +73,7 @@ public class TenantController {
     public HttpResponse<?> delete(@NotNull final Long id) {
         try {
             final Tenant tenant = tenantRepository.findByIdOrThrowException(id);
-            tenantRepository.delete(tenant);
+            tenantRepository.remove(tenant);
             final ResultContent<?> rs = ResultContent.of().message("Tenant (id: %s) successfully deleted.", tenant.getId());
             return HttpResponse.ok(rs);
         } catch (PersistenceException e) {

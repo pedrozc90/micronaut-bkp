@@ -21,10 +21,10 @@ import org.junit.jupiter.api.*;
 
 import java.text.ParseException;
 
-@MicronautTest
+@MicronautTest(rollback = false)
+@TestMethodOrder(value = MethodOrderer.OrderAnnotation.class)
 public class AuthenticationTest {
 
-    private static User user;
     private static final String username = "temporary";
     private static final String password = "temporary";
 
@@ -40,25 +40,25 @@ public class AuthenticationTest {
     @BeforeEach
     public void setup() {
         blockingClient = client.toBlocking();
+    }
 
-        user = new User();
+    @Test
+    @Order(1)
+    public void createTemporaryUser() {
+        User user = new User();
         user.setEmail(String.format("%s@email.com", username));
         user.setUsername(username);
         user.setPassword(DigestUtils.md5Hex(password));
         user.setActive(true);
-        user = userRepository.insert(user);
-    }
+        user = userRepository.save(user);
 
-    @AfterEach
-    public void reset() {
-        try {
-            userRepository.delete(user);
-        } finally {
-            userRepository.resetSequence();
-        }
+        Assertions.assertNotNull(user);
+        Assertions.assertEquals(username, user.getUsername());
+        Assertions.assertTrue(user.isActive());
     }
 
     @Test
+    @Order(2)
     @SneakyThrows(value = ParseException.class)
     @DisplayName("Should return a valid access_token")
     public void verifyUserAuthentication() {
@@ -77,12 +77,23 @@ public class AuthenticationTest {
     }
 
     @Test
+    @Order(3)
+    public void deactivatedUser() {
+        final User user = userRepository.findByUsername(username)
+            .map((v) -> {
+                v.setActive(false);
+                return userRepository.update(v);
+            }).orElse(null);
+
+        Assertions.assertNotNull(user);
+        Assertions.assertEquals(username, user.getUsername());
+        Assertions.assertFalse(user.isActive());
+    }
+
+    @Test
+    @Order(4)
     @DisplayName("Unknown user credentials")
     public void verifyDeactivatedUserAuthentication() {
-        user.setActive(false);
-        userRepository.save(user);
-        userRepository.commit();
-
         final HttpClientResponseException e = Assertions.assertThrows(HttpClientResponseException.class, () -> {
             final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(username, password);
 
@@ -97,6 +108,7 @@ public class AuthenticationTest {
     }
 
     @Test
+    @Order(5)
     @DisplayName("Unknown user credentials")
     public void verifyNonExistentUserAuthentication() {
         final HttpClientResponseException e = Assertions.assertThrows(HttpClientResponseException.class, () -> {
@@ -110,6 +122,15 @@ public class AuthenticationTest {
         Assertions.assertNotNull(e);
         Assertions.assertEquals(HttpStatus.UNAUTHORIZED, e.getStatus());
         Assertions.assertEquals("User Not Found", e.getMessage());
+    }
+
+    @Test
+    @Order(6)
+    public void removeTemporaryUser() {
+        userRepository.findByUsername(username)
+            .ifPresent((v) -> userRepository.remove(v));
+
+        Assertions.assertFalse(userRepository.validateUsername(username));
     }
 
 }

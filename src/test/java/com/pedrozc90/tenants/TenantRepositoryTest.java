@@ -1,5 +1,6 @@
 package com.pedrozc90.tenants;
 
+import com.pedrozc90.core.models.Page;
 import com.pedrozc90.tenants.models.QTenant;
 import com.pedrozc90.tenants.models.Tenant;
 import com.pedrozc90.tenants.repo.TenantRepository;
@@ -7,7 +8,6 @@ import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.*;
 
-import java.util.List;
 import java.util.Optional;
 
 @MicronautTest
@@ -25,9 +25,10 @@ public class TenantRepositoryTest {
     @Test
     @Order(1)
     public void testFetch() {
-        final List<Tenant> tenants = repo.fetchAll();
-        Assertions.assertNotNull(tenants);
-        Assertions.assertTrue(tenants.size() >= 2);
+        final Page<Tenant> page = repo.fetch(1, 15, null);
+        Assertions.assertNotNull(page);
+        Assertions.assertNotNull(page.getList());
+        Assertions.assertTrue(page.getList().size() <= 2);
     }
 
     @Test
@@ -63,10 +64,10 @@ public class TenantRepositoryTest {
     public void testDelete() {
         repo.findOne(QTenant.tenant.name.equalsIgnoreCase("Unknown"))
             .ifPresent(v -> {
-                repo.delete(v);
-                repo.commit();
+                repo.remove(v);
+                // repo.commit();
             });
-        repo.resetSequence();
+        // repo.resetSequence();
     }
 
 }

@@ -17,6 +17,8 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.ALWAYS;
+
 @Entity
 @EntityListeners({ AuditListener.class })
 @Table(name = "users", schema = "public")
@@ -27,9 +29,9 @@ import java.io.Serializable;
 @Builder(toBuilder = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(onlyExplicitlyIncluded = true)
-@NamedNativeQueries({
-    @NamedNativeQuery(name = "reset_sequence", query = "CALL reset_table_sequence('users');")
-})
+// @NamedNativeQueries({
+//     @NamedNativeQuery(name = "reset_sequence", query = "CALL reset_table_sequence('users');")
+// })
 @Config(entityAccessors = true, listAccessors = true, mapAccessors = true)
 public class User implements Serializable, Auditable {
 
@@ -78,7 +80,7 @@ public class User implements Serializable, Auditable {
     @Column(name = "active", columnDefinition = "boolean", nullable = false)
     private boolean active = true;
 
-    @JsonInclude(JsonInclude.Include.ALWAYS)
+    @JsonInclude(ALWAYS)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tenant_id", foreignKey = @ForeignKey(name = "users_tenant_fkey"))
     private Tenant tenant;
@@ -98,7 +100,7 @@ public class User implements Serializable, Auditable {
         return passwordConfirm;
     }
 
-    @JsonProperty("passwordConfirm")
+    @JsonProperty("password_confirm")
     public void setPasswordConfirm(final String passwordConfirm) {
         this.passwordConfirm = passwordConfirm;
     }
@@ -106,16 +108,6 @@ public class User implements Serializable, Auditable {
     @JsonIgnore
     public boolean isNotActive() {
         return !isActive();
-    }
-
-    public static User merge(final User user, final UserData data) {
-        user.setUsername(data.getUsername());
-        user.setEmail(data.getEmail());
-        user.setProfile(data.getProfile());
-        user.setActive(data.isActive());
-        user.setAudit(data.getAudit());
-        user.setTenant(data.getTenant());
-        return user;
     }
 
 }

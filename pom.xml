@@ -10,20 +10,21 @@
     <parent>
         <groupId>io.micronaut</groupId>
         <artifactId>micronaut-parent</artifactId>
-        <version>3.6.1</version>
+        <version>3.6.3</version>
     </parent>
 
     <properties>
         <packaging>jar</packaging>
         <jdk.version>11</jdk.version>
         <release.version>11</release.version>
-        <micronaut.version>3.6.1</micronaut.version>
-        <micronaut.version.data>3.7.2</micronaut.version.data>
-        <micronaut.test.resources.enabled>true</micronaut.test.resources.enabled>
+        <micronaut.version>3.6.3</micronaut.version>
+        <micronaut.data.version>3.7.2</micronaut.data.version>
         <querydsl.version>5.0.0</querydsl.version>
         <mapstruct.version>1.5.2.Final</mapstruct.version>
-        <projectlombok-mapstruct.version>0.2.0</projectlombok-mapstruct.version>
+        <lombok.mapstruct.version>0.2.0</lombok.mapstruct.version>
         <guava.version>31.1-jre</guava.version>
+        <commons.codec.version>1.15</commons.codec.version>
+        <micronaut.test.resources.enabled>true</micronaut.test.resources.enabled>
         <micronaut.runtime>netty</micronaut.runtime>
         <exec.mainClass>com.pedrozc90.Application</exec.mainClass>
     </properties>
@@ -79,11 +80,16 @@
         <dependency>
             <groupId>io.micronaut.data</groupId>
             <artifactId>micronaut-data-hibernate-jpa</artifactId>
-            <scope>compile</scope>
+            <version>${micronaut.data.version}</version>
         </dependency>
         <dependency>
             <groupId>io.micronaut.liquibase</groupId>
             <artifactId>micronaut-liquibase</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.micronaut.openapi</groupId>
+            <artifactId>micronaut-openapi</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -117,8 +123,19 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
+            <version>2.2.3</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -136,16 +153,6 @@
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>commons-codec</groupId>
-            <artifactId>commons-codec</artifactId>
-            <version>1.15</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.persistence</groupId>
-            <artifactId>jakarta.persistence-api</artifactId>
-            <version>2.2.3</version>
-        </dependency>
         <!--querydsl-->
         <dependency>
             <groupId>com.querydsl</groupId>
@@ -157,17 +164,17 @@
             <groupId>com.querydsl</groupId>
             <artifactId>querydsl-jpa</artifactId>
             <version>${querydsl.version}</version>
-<!--            <exclusions>-->
-<!--                <exclusion>-->
-<!--                    <groupId>com.google.guava</groupId>-->
-<!--                    <artifactId>guava</artifactId>-->
-<!--                </exclusion>-->
-<!--            </exclusions>-->
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>${guava.version}</version>
+        </dependency>
+        <!-- helpers -->
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>${commons.codec.version}</version>
         </dependency>
     </dependencies>
 
@@ -211,6 +218,9 @@
                     <!-- Uncomment to enable incremental compilation -->
                     <!-- <useIncrementalCompilation>false</useIncrementalCompilation> -->
 
+                    <!-- [WARNING] Unable to autodetect 'javac' path, using 'javac' from the environment. -->
+                    <!-- <fork>true</fork> -->
+
                     <annotationProcessorPaths combine.self="override">
                         <path>
                             <groupId>org.mapstruct</groupId>
@@ -225,17 +235,12 @@
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok-mapstruct-binding</artifactId>
-                            <version>${projectlombok-mapstruct.version}</version>
+                            <version>${lombok.mapstruct.version}</version>
                         </path>
                         <path>
                             <groupId>io.micronaut</groupId>
                             <artifactId>micronaut-inject-java</artifactId>
                             <version>${micronaut.version}</version>
-                        </path>
-                        <path>
-                            <groupId>io.micronaut.data</groupId>
-                            <artifactId>micronaut-data-processor</artifactId>
-                            <version>${micronaut.data.version}</version>
                         </path>
                         <path>
                             <groupId>io.micronaut</groupId>
@@ -251,6 +256,16 @@
                             <groupId>io.micronaut</groupId>
                             <artifactId>micronaut-validation</artifactId>
                             <version>${micronaut.version}</version>
+                        </path>
+                        <path>
+                            <groupId>io.micronaut.data</groupId>
+                            <artifactId>micronaut-data-processor</artifactId>
+                            <version>${micronaut.data.version}</version>
+                        </path>
+                        <path>
+                            <groupId>io.micronaut.openapi</groupId>
+                            <artifactId>micronaut-openapi</artifactId>
+                            <version>${micronaut.openapi.version}</version>
                         </path>
                         <path>
                             <groupId>io.micronaut.security</groupId>

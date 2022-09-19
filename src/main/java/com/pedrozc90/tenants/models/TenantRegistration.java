@@ -2,6 +2,7 @@ package com.pedrozc90.tenants.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.micronaut.core.annotation.Introspected;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,14 +21,9 @@ public class TenantRegistration {
 
     @NotNull
     @NotBlank
-    @Size(max = 255)
+    @Size(min = 1, max = 255)
+    @Schema(name = "name")
     @JsonProperty("name")
     private String name;
-
-    public static Tenant transform(final TenantRegistration data) {
-        final Tenant t = new Tenant();
-        t.setName(data.getName());
-        return t;
-    }
 
 }

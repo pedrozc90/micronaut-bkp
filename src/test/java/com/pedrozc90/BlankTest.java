@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 class BlankTest {
 
     @Inject
-    EmbeddedApplication<?> application;
+    private EmbeddedApplication<?> application;
 
     @Test
     void testItWorks() {

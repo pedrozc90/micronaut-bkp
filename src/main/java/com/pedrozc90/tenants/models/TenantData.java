@@ -1,8 +1,10 @@
 package com.pedrozc90.tenants.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.pedrozc90.core.audit.Audit;
 import com.pedrozc90.core.audit.Auditable;
 import io.micronaut.core.annotation.Introspected;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import javax.persistence.Embedded;
@@ -22,15 +24,21 @@ import java.io.Serializable;
 public class TenantData implements Serializable, Auditable {
 
     @NotNull
+    @Schema(name = "id")
+    @JsonProperty("id")
     private Long id;
 
     @Embedded
+    @Schema(name = "audit")
+    @JsonProperty("audit")
     private Audit audit = new Audit();
 
     @ToString.Include
     @NotNull
     @NotBlank
-    @Size(max = 255)
+    @Size(min = 1, max = 255)
+    @Schema(name = "name")
+    @JsonProperty("name")
     private String name;
 
 }
