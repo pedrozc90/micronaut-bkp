@@ -54,8 +54,8 @@ public class User implements Serializable, Auditable {
     @NotBlank
     @Email
     @Size(max = 255)
-    @Schema(name = "audit")
-    @JsonProperty("audit")
+    @Schema(name = "email")
+    @JsonProperty("email")
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
