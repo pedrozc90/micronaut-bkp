@@ -6,6 +6,6 @@
 
     <include file="changelogs/01-create-functions.sql" relativeToChangelogFile="true"/>
     <include file="changelogs/02-create-users.sql" relativeToChangelogFile="true"/>
-    <include file="changelogs/03-create-access-logs.sql" relativeToChangelogFile="true"/>
+    <include file="changelogs/03-create-access-tables.sql" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

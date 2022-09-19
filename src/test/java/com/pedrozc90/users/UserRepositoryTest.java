@@ -1,6 +1,6 @@
 package com.pedrozc90.users;
 
-import com.pedrozc90.core.exceptions.ApplicationException;
+import com.pedrozc90.core.models.Page;
 import com.pedrozc90.users.models.Profile;
 import com.pedrozc90.users.models.User;
 import com.pedrozc90.users.repo.UserRepository;
@@ -29,22 +29,31 @@ public class UserRepositoryTest {
         final User user = userOpt.get();
         Assertions.assertEquals(userId, user.getId());
         Assertions.assertEquals("master", user.getUsername());
-        Assertions.assertEquals("admin@email.com", user.getEmail());
+        Assertions.assertEquals("pedrozc90+master@gmail.com", user.getEmail());
         Assertions.assertEquals(Profile.MASTER, user.getProfile());
         Assertions.assertNotNull(user.getAudit());
     }
 
     @Test
+    public void fetch() {
+        final Page<User> page = userRepository.fetch(1, 15, "");
+        Assertions.assertNotNull(page);
+        Assertions.assertTrue(page.getList().size() <= 15);
+    }
+
+    @Test
     public void failFindById() {
         final long userId = 1_000;
-        final ApplicationException e = Assertions.assertThrows(ApplicationException.class, () -> {
+        Assertions.assertThrows(Exception.class, () -> {
             final User user = userRepository.findByIdOrThrowException(userId);
             Assertions.assertNull(user);
         });
+    }
 
-        Assertions.assertNotNull(e);
-        Assertions.assertNotNull(e.getMessage());
-        Assertions.assertTrue(e.getMessage().matches("(?i)^user.+not found\\.$"));
+    @Test
+    public void validateEmail() {
+        boolean valid = userRepository.validateEmail("pedrozc90+master@gmail.com");
+        Assertions.assertTrue(valid);
     }
 
 }

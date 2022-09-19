@@ -2,8 +2,8 @@ package com.pedrozc90.core.authentication;
 
 import com.pedrozc90.core.exceptions.TokenNotFoundException;
 import com.pedrozc90.core.utils.AuthenticationUtils;
-import com.pedrozc90.logs.models.RefreshToken;
-import com.pedrozc90.logs.repo.RefreshTokenRepository;
+import com.pedrozc90.token.models.RefreshToken;
+import com.pedrozc90.token.repo.RefreshTokenRepository;
 import com.pedrozc90.users.models.Profile;
 import com.pedrozc90.users.models.User;
 import com.pedrozc90.users.repo.UserRepository;
@@ -30,7 +30,7 @@ import static io.micronaut.security.errors.IssuingAnAccessTokenErrorCode.INVALID
 public class RefreshTokenHandler implements RefreshTokenPersistence {
 
     @Inject
-    private RefreshTokenRepository repo;
+    private RefreshTokenRepository refreshTokenRepository;
 
     @Inject
     private UserRepository userRepository;
@@ -41,14 +41,13 @@ public class RefreshTokenHandler implements RefreshTokenPersistence {
         final Authentication authentication = event.getAuthentication();
         final String username = authentication.getName();
         final String refreshToken = event.getRefreshToken();
-        repo.register(username, refreshToken);
-        repo.revokeOld(username);
+        refreshTokenRepository.register(username, refreshToken);
     }
 
     @Override
     public Publisher<Authentication> getAuthentication(final String refreshToken) {
         return Flux.create((emitter) -> {
-            final Optional<RefreshToken> refreshTokenOpt = repo.findOne(refreshToken);
+            final Optional<RefreshToken> refreshTokenOpt = refreshTokenRepository.findByRefreshToken(refreshToken);
             if (refreshTokenOpt.isEmpty()) {
                 emitter.error(new TokenNotFoundException());
                 return;
@@ -57,12 +56,12 @@ public class RefreshTokenHandler implements RefreshTokenPersistence {
             final RefreshToken rt = refreshTokenOpt.get();
             if (rt.isRevoked()) {
                 emitter.error(new OauthErrorResponseException(INVALID_GRANT, "refresh token revoked", null));
-                return;
             }
 
             final Optional<User> userOpt = userRepository.findByUsername(rt.getUsername());
+
             if (userOpt.isEmpty()) {
-                emitter.error(AuthenticationResponse.exception(AuthenticationFailureReason.USER_NOT_FOUND));
+                emitter.error(new TokenNotFoundException());
                 return;
             }
 

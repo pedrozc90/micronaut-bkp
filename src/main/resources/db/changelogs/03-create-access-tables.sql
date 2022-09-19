@@ -16,11 +16,10 @@ CREATE TABLE IF NOT EXISTS public.access_token (
     address         varchar(255),
     action          varchar(32) NOT NULL DEFAULT 'LOGIN',
     username        varchar(32),
-    access_token    text NOT NULL,
-    refresh_token   text NOT NULL,
+    access_token    text,
+    refresh_token   text,
 
     CONSTRAINT access_token_pkey PRIMARY KEY (id)
-    -- CONSTRAINT access_token_user_fkey FOREIGN KEY (user_id) REFERENCES public.users (id)
 );
 
 -- rollback DROP TABLE IF EXISTS access_token;

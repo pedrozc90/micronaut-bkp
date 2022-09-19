@@ -1,4 +1,4 @@
-package com.pedrozc90.logs.models;
+package com.pedrozc90.token.models;
 
 import com.pedrozc90.core.audit.Audit;
 import com.pedrozc90.core.audit.Auditable;
@@ -34,7 +34,7 @@ public class RefreshToken implements Serializable, Auditable {
 
     @NotNull
     @NotBlank
-    @Column(name = "username", nullable = false)
+    @Column(name = "username", length = 32, nullable = false)
     private String username;
 
     @ToString.Include

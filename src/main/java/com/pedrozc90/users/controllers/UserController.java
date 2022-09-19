@@ -2,10 +2,11 @@ package com.pedrozc90.users.controllers;
 
 import com.pedrozc90.core.exceptions.ApplicationException;
 import com.pedrozc90.core.models.Page;
-import com.pedrozc90.core.models.Pagination;
 import com.pedrozc90.core.models.ResultContent;
-import com.pedrozc90.core.querydsl.JPAQuery;
-import com.pedrozc90.users.models.*;
+import com.pedrozc90.users.models.Profile;
+import com.pedrozc90.users.models.User;
+import com.pedrozc90.users.models.UserData;
+import com.pedrozc90.users.models.UserRegistration;
 import com.pedrozc90.users.repo.UserRepository;
 import io.micronaut.core.annotation.Nullable;
 import io.micronaut.http.HttpResponse;
@@ -14,7 +15,6 @@ import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
-import io.micronaut.transaction.annotation.ReadOnly;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -36,23 +36,10 @@ public class UserController {
     }
 
     @Get("/")
-    @ReadOnly
     public Page<User> fetch(@QueryValue(value = "page", defaultValue = "1") final int page,
                             @QueryValue(value = "rpp", defaultValue = "15") final int rpp,
                             @Nullable @QueryValue(value = "q") final String q) {
-        final JPAQuery<User> query = userRepository.builder();
-
-        if (StringUtils.isNotBlank(q)) {
-            query.where(
-                QUser.user.username.containsIgnoreCase(q)
-                    .or(QUser.user.email.containsIgnoreCase(q))
-            );
-        }
-
-        query.orderBy(QUser.user.id.asc())
-            .select(QUser.user);
-
-        return Pagination.fetch(query, page, rpp);
+        return userRepository.fetch(page, rpp, q);
     }
 
     @Post("/")
@@ -81,10 +68,9 @@ public class UserController {
     public HttpResponse<?> update(@NotNull @Valid @Body final UserData data) {
         final Long id = data.getId();
 
-        final User tmp = userRepository.findByIdOrThrowException(id);
-        User.merge(tmp, data);
+        final User tmp = User.merge(userRepository.findByIdOrThrowException(id), data);
 
-        final User user = userRepository.save(tmp);
+        final User user = userRepository.update(tmp);
         return HttpResponse
             .ok(user)
             .headers((headers) -> headers.location(location(id)));
@@ -121,7 +107,7 @@ public class UserController {
                     .badRequest();
             }
 
-            userRepository.delete(user);
+            userRepository.remove(user);
 
             final ResultContent<?> rs = ResultContent.of().message("User (id: %s) successfully deleted.", user.getId());
 

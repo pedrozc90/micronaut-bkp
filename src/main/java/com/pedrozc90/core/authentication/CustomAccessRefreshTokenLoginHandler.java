@@ -1,7 +1,8 @@
 package com.pedrozc90.core.authentication;
 
-import com.pedrozc90.logs.models.AccessAction;
-import com.pedrozc90.logs.repo.AccessLogRepository;
+import com.pedrozc90.token.models.AccessAction;
+import com.pedrozc90.token.repo.AccessTokenRepository;
+import com.pedrozc90.users.repo.UserRepository;
 import io.micronaut.context.annotation.Replaces;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
@@ -22,12 +23,15 @@ import java.util.Optional;
 public class CustomAccessRefreshTokenLoginHandler implements LoginHandler {
 
     protected final AccessRefreshTokenGenerator accessRefreshTokenGenerator;
-    protected final AccessLogRepository accessLogRepository;
+    protected final AccessTokenRepository accessTokenRepository;
+    protected final UserRepository userRepository;
 
     public CustomAccessRefreshTokenLoginHandler(final AccessRefreshTokenGenerator accessRefreshTokenGenerator,
-                                                final AccessLogRepository accessLogRepository) {
+                                                final AccessTokenRepository accessTokenRepository,
+                                                final UserRepository userRepository) {
         this.accessRefreshTokenGenerator = accessRefreshTokenGenerator;
-        this.accessLogRepository = accessLogRepository;
+        this.accessTokenRepository = accessTokenRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -35,10 +39,10 @@ public class CustomAccessRefreshTokenLoginHandler implements LoginHandler {
         final Optional<AccessRefreshToken> accessRefreshTokenOpt = this.accessRefreshTokenGenerator.generate(authentication);
         if (accessRefreshTokenOpt.isPresent()) {
             final AccessRefreshToken accessRefreshToken = accessRefreshTokenOpt.get();
-            accessLogRepository.register(AccessAction.LOGIN, request, authentication, accessRefreshToken);
+            accessTokenRepository.register(AccessAction.LOGIN, authentication, accessRefreshToken, request);
             return HttpResponse.ok(accessRefreshToken);
         }
-        accessLogRepository.register(AccessAction.LOGIN_FAILED, request, authentication);
+        accessTokenRepository.register(AccessAction.LOGIN_FAILED, authentication, request);
         return HttpResponse.serverError();
     }
 
@@ -47,16 +51,16 @@ public class CustomAccessRefreshTokenLoginHandler implements LoginHandler {
         final Optional<AccessRefreshToken> accessRefreshTokenOpt = this.accessRefreshTokenGenerator.generate(refreshToken, authentication);
         if (accessRefreshTokenOpt.isPresent()) {
             final AccessRefreshToken accessRefreshToken = accessRefreshTokenOpt.get();
-            accessLogRepository.register(AccessAction.LOGIN_REFRESH, request, authentication, accessRefreshToken);
+            accessTokenRepository.register(AccessAction.LOGIN_REFRESH, authentication, accessRefreshToken, request);
             return HttpResponse.ok(accessRefreshToken);
         }
-        accessLogRepository.register(AccessAction.LOGIN_REFRESH_FAILED, request, authentication);
+        accessTokenRepository.register(AccessAction.LOGIN_REFRESH_FAILED, authentication, request);
         return HttpResponse.serverError();
     }
 
     @Override
     public MutableHttpResponse<?> loginFailed(final AuthenticationResponse authenticationResponse, final HttpRequest<?> request) {
-        accessLogRepository.registerLoginFailed(request);
+        accessTokenRepository.register(AccessAction.LOGIN_FAILED, request);
         throw new AuthenticationException(authenticationResponse.getMessage().orElse(null));
     }
 

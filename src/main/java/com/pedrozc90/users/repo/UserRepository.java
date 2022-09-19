@@ -1,60 +1,86 @@
 package com.pedrozc90.users.repo;
 
-import com.pedrozc90.core.data.EntityRepository;
+import com.pedrozc90.core.data.CrudRepository;
+import com.pedrozc90.core.models.Page;
+import com.pedrozc90.core.querydsl.JPAQuery;
 import com.pedrozc90.users.models.QUser;
 import com.pedrozc90.users.models.User;
+import com.pedrozc90.users.models.UserData;
 import com.pedrozc90.users.models.UserRegistration;
-import io.micronaut.core.annotation.NonNull;
-import io.micronaut.runtime.ApplicationConfiguration;
 import io.micronaut.transaction.annotation.ReadOnly;
 import jakarta.inject.Singleton;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.StringUtils;
 
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
-import javax.validation.constraints.NotNull;
 import java.util.Optional;
 
 @Singleton
-public class UserRepository extends EntityRepository<User, Long> {
+public class UserRepository extends CrudRepository<User, Long> {
 
-    private final ApplicationConfiguration config;
-
-    public UserRepository(final ApplicationConfiguration config) {
-        super("users", User.class, QUser.user);
-        this.config = config;
+    public UserRepository(final EntityManager em) {
+        super(em, User.class, QUser.user);
     }
 
     @ReadOnly
-    @SuppressWarnings("MicronautDataMethodInconsistencyInspection")
     public Optional<User> findByCredentials(final String username, final String password) {
         return findOne(QUser.user.username.eq(username).and(QUser.user.password.eq(password)));
     }
 
     @ReadOnly
-    public Optional<User> findByUsername(@NotNull @NonNull final String username) {
+    public Optional<User> findByUsername(final String username) {
         return findOne(QUser.user.username.eq(username));
     }
 
     @ReadOnly
-    public boolean validateEmail(@NotNull @NonNull final String email) {
+    public Optional<User> findByEmail(final String email) {
+        return findOne(QUser.user.username.eq(email));
+    }
+
+    @ReadOnly
+    public Page<User> fetch(final int page, final int rpp, final String q) {
+        final JPAQuery<User> query = createQuery().from(QUser.user);
+
+        if (StringUtils.isNotBlank(q)) {
+            query.where(QUser.user.email.containsIgnoreCase(q))
+                .where(QUser.user.username.containsIgnoreCase(q));
+        }
+
+        query.orderBy(QUser.user.username.asc());
+
+        return Page.create(query, page, rpp);
+    }
+
+    @ReadOnly
+    public boolean validateEmail(final String email) {
         return exists(QUser.user.email.equalsIgnoreCase(email));
     }
 
     @ReadOnly
-    public boolean validateUsername(@NotNull @NonNull final String username) {
-        return exists(QUser.user.username.equalsIgnoreCase(username));
+    public boolean validateUsername(final String username) {
+        return exists(QUser.user.email.equalsIgnoreCase(username));
     }
 
     @Transactional
-    public User register(@NotNull @NonNull final UserRegistration data) {
-        final String passwordHashed = DigestUtils.md5Hex(data.getPassword());
+    public User update(final User user, final UserData data) {
+        if (user == null) return null;
+        user.setUsername(data.getUsername());
+        user.setEmail(data.getEmail());
+        user.setProfile(data.getProfile());
+        user.setActive(data.isActive());
+        user.setAudit(data.getAudit());
+        return super.update(user);
+    }
 
+    @Transactional
+    public User register(final UserRegistration data) {
         final User user = new User();
         user.setEmail(data.getEmail());
         user.setUsername(data.getUsername());
-        user.setPassword(passwordHashed);
-        // user.setPasswordConfirm(data.getPasswordConfirm());
-        return save(user);
+        user.setPassword(DigestUtils.md5Hex(data.getPassword()));
+        user.setPasswordConfirm(DigestUtils.md5Hex(data.getPasswordConfirm()));
+        return super.save(user);
     }
 
 }

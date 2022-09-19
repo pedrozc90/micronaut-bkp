@@ -24,7 +24,8 @@ CREATE TABLE IF NOT EXISTS public.users (
 );
 
 INSERT INTO public.users (email, profile, username, password) VALUES
-('admin@email.com', 'MASTER', 'master', md5('1'));
+('pedrozc90+master@gmail.com', 'MASTER', 'master', md5('1')),
+('pedrozc90+member@gmail.com', 'NORMAL', 'member', md5('1'));
 
 INSERT INTO public.users (email, profile, username, password, active) VALUES
 ('test@email.com', 'NORMAL', 'tester', md5('1'), false);

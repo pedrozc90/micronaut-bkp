@@ -1,6 +1,6 @@
 package com.pedrozc90.core.handlers;
 
-import com.pedrozc90.core.exceptions.ApplicationException;
+import com.pedrozc90.core.exceptions.TokenNotFoundException;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
@@ -13,11 +13,11 @@ import javax.validation.constraints.NotNull;
 
 @Produces
 @Singleton
-@Requires(classes = { ApplicationException.class, ExceptionHandler.class })
-public class TokenNotFoundExceptionHandler implements ExceptionHandler<ApplicationException, HttpResponse<?>> {
+@Requires(classes = { TokenNotFoundException.class, ExceptionHandler.class })
+public class TokenNotFoundExceptionHandler implements ExceptionHandler<TokenNotFoundException, HttpResponse<?>> {
 
     @Override
-    public HttpResponse<?> handle(final HttpRequest request, @NotNull final ApplicationException exception) {
+    public HttpResponse<?> handle(final HttpRequest request, @NotNull final TokenNotFoundException exception) {
         return HttpResponse.status(HttpStatus.FORBIDDEN);
     }
 

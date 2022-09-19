@@ -9,10 +9,7 @@ import lombok.*;
 import javax.persistence.Embedded;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 import java.io.Serializable;
 
 @Getter
@@ -25,6 +22,7 @@ import java.io.Serializable;
 @Introspected
 public class UserData implements Serializable, Auditable {
 
+    @Positive
     @JsonProperty("id")
     private Long id;
 
@@ -36,7 +34,7 @@ public class UserData implements Serializable, Auditable {
     @NotNull
     @NotBlank
     @Email
-    @Size(max = 255)
+    @Size(min = 1, max = 255)
     @JsonProperty("email")
     private String email;
 
@@ -49,7 +47,7 @@ public class UserData implements Serializable, Auditable {
     @ToString.Include
     @NotNull
     @NotBlank
-    @Size(max = 32)
+    @Size(min = 1, max = 32)
     @JsonProperty("username")
     private String username;
 

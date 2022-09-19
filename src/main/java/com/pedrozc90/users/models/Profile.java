@@ -1,18 +1,18 @@
 package com.pedrozc90.users.models;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public enum Profile {
 
-    MASTER("Master"),
+    MASTER("Master", Collections.singletonList("MASTER")),
     NORMAL("Normal");
 
     private final String description;
     private final List<String> roles;
 
     Profile(final String description) {
-        this(description, new ArrayList<>());
+        this(description, Collections.emptyList());
     }
 
     Profile(final String description, final List<String> roles) {
