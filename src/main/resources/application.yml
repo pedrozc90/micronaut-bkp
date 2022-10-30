@@ -11,7 +11,7 @@ micronaut:
                 paths: classpath:META-INF/swagger/views/swagger-ui
                 mapping: /swagger-ui/**
     server:
-        port: 9000
+        port: 4000
         cors:
             enabled: true
     http:
@@ -29,20 +29,21 @@ micronaut:
                 signatures:
                     secret:
                         generator:
-                            secret: ${JWT_GENERATOR_SIGNATURE_SECRET:`SiDPL3UYMIxD7w9TzMTquiaf3yuiRR4R6qHk7hqvdiqcvonXiVuBuus499PjQaD0`}
+                            secret: ${JWT_SECRET:`SiDPL3UYMIxD7w9TzMTquiaf3yuiRR4R6qHk7hqvdiqcvonXiVuBuus499PjQaD0`}
                 generator:
                     access-token:
                         expiration: 86400   # in seconds (86400s = 24h)
                     refresh-token:
-                        secret: ${JWT_GENERATOR_SIGNATURE_SECRET:`SiDPL3UYMIxD7w9TzMTquiaf3yuiRR4R6qHk7hqvdiqcvonXiVuBuus499PjQaD0`}
+                        secret: ${JWT_SECRET:`SiDPL3UYMIxD7w9TzMTquiaf3yuiRR4R6qHk7hqvdiqcvonXiVuBuus499PjQaD0`}
 
 datasources:
     default:
         db-type: postgresql
-        url: ${JDBC_URL:`jdbc:postgresql://127.0.0.1:5433/blank`}
+        # url: ${DB_URL:`jdbc:postgresql://127.0.0.1:5432/blank`}
+        url: jdbc:postgresql://${DB_HOST:127.0.0.1}:${DB_PORT:5432}/${DB_NAME:blank}
         driverClassName: org.postgresql.Driver
-        username: ${JDBC_USERNAME:postgres}
-        password: ${JDBC_PASSWORD:1}
+        username: ${DB_USER:postgres}
+        password: ${DB_PASS:postgres}
 
 jpa:
     default:

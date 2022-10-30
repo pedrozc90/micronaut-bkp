@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+    app:
+        build:
+            context: .
+            dockerfile: ./Dockerfile
+        image: micronaut:0.0.1
+        container_name: micronaut
+        restart: unless-stopped
+        hostname: micronaut
+        expose:
+          - 4000
+        environment:
+            - DB_HOST="192.168.15.7"
+            - DB_PORT="5432"
+            - DB_NAME="blank"
+            - DB_USER="postgres"
+            - DB_PASS="postgres"
+        ports:
+            - "4000:4000"

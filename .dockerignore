@@ -1,0 +1,22 @@
+.idea
+target
+build
+out
+
+# docker files
+Dockerfile
+.dockerignore
+
+# git files
+.gitattributes
+.gitignore
+.git
+
+# other files
+MICRONAUT.md
+README.md
+LICENSE
+*.sh
+
+# folders
+./logs

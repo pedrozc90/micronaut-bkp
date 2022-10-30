@@ -16,20 +16,20 @@ micronaut:
                 signatures:
                     secret:
                         generator:
-                            secret: ${JWT_GENERATOR_SIGNATURE_SECRET:`SiDPL3UYMIxD7w9TzMTquiaf3yuiRR4R6qHk7hqvdiqcvonXiVuBuus499PjQaD0`}
+                            secret: ${JWT_SECRET:`SiDPL3UYMIxD7w9TzMTquiaf3yuiRR4R6qHk7hqvdiqcvonXiVuBuus499PjQaD0`}
                 generator:
                     access-token:
                         expiration: 14400
                     refresh-token:
-                        secret: ${JWT_GENERATOR_SIGNATURE_SECRET:`SiDPL3UYMIxD7w9TzMTquiaf3yuiRR4R6qHk7hqvdiqcvonXiVuBuus499PjQaD0`}
+                        secret: ${JWT_SECRET:`SiDPL3UYMIxD7w9TzMTquiaf3yuiRR4R6qHk7hqvdiqcvonXiVuBuus499PjQaD0`}
 
 datasources:
     default:
         db-type: postgresql
-        url: ${JDBC_URL:`jdbc:postgresql://127.0.0.1:5433/blank_test`}
+        url: jdbc:postgresql://${DB_HOST:127.0.0.1}:${DB_PORT:5432}/${DB_NAME:blank_test}
         driverClassName: org.postgresql.Driver
-        username: ${JDBC_USERNAME:postgres}
-        password: ${JDBC_PASSWORD:1}
+        username: ${DB_USER:postgres}
+        password: ${DB_PASS:postgres}
 
 jpa:
     default:
